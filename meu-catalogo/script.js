@@ -273,12 +273,12 @@ botoesCategoria.forEach(botao => {
         gridCatalogo.innerHTML = '';
 
         if (genreId === 'all') {
-            // Esconde o botão de voltar quando estiver em "Meus Salvos"
-            painelNavegacion.style.display = 'none';
+            // CORRIGIDO: Usando painelNavegacao (com 'a')
+            painelNavegacao.style.display = 'none';
             carregarListaDoServidor();
         } else {
-            // Mostra explicitamente o botão de voltar quando estiver explorando os Top 20
-            painelNavegacion.style.display = 'block';
+            // CORRIGIDO: Usando painelNavegacao (com 'a')
+            painelNavegacao.style.display = 'block';
             await carregarTop20PorCategoria(genreId);
         }
     });
@@ -286,8 +286,8 @@ botoesCategoria.forEach(botao => {
 
 if (btnVoltar) {
     btnVoltar.addEventListener('click', function() {
-        // Esconde o painel de navegação ao retornar
-        painelNavegacion.style.display = 'none';
+        // CORRIGIDO: Usando painelNavegacao (com 'a')
+        painelNavegacao.style.display = 'none';
         
         // Reseta os estilos dos botões de categoria para focar em "Meus Salvos"
         botoesCategoria.forEach(b => {
