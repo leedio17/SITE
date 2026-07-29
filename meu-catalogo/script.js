@@ -77,7 +77,7 @@ btnAdicionar.addEventListener('click', async function() {
         if (dadosFilme) {
             try {
                 // 1º: Envia para o back-end salvar e AGORA guardamos a resposta que vem dele
-                const resposta = await fetch('https://SUA-API-NA-RENDER.onrender.com/filmes', {
+                const resposta = await fetch('https://api-meu-catalogo.onrender.com/filmes', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(dadosFilme)
