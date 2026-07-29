@@ -51,7 +51,8 @@ function adicionarFilmeNaTela(dadosFilme) {
     const btnRemover = novoCartao.querySelector('.btn-remover');
     btnRemover.addEventListener('click', async function() {
         try {
-            await fetch(`https://api-meu-catalogo.onrender.com/${dadosFilme._id}`, {
+            // USANDO O LINK REAL DA SUA RENDER AQUI:
+            await fetch(`https://api-meu-catalogo.onrender.com/filmes/${dadosFilme._id}`, {
                 method: 'DELETE'
             });
             
@@ -60,9 +61,6 @@ function adicionarFilmeNaTela(dadosFilme) {
             console.error("Erro ao excluir o filme:", erro);
         }
     });
-
-    gridCatalogo.appendChild(novoCartao);
-}
 
 // --- 3. EVENTO DO BOTÃO ADICIONAR --- //
 btnAdicionar.addEventListener('click', async function() {
