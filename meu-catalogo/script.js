@@ -158,17 +158,19 @@ function adicionarFilmeNaTela(dadosFilme) {
     gridCatalogo.appendChild(novoCartao);
 }
 
-// --- 4. FUNÇÃO VISUAL PARA OS FILMES DE EXPLORAÇÃO E RECOMENDAÇÃO --- //
+// --- FUNÇÃO VISUAL PARA OS FILMES DE EXPLORAÇÃO E RECOMENDAÇÃO --- //
 function adicionarFilmeExploracaoNaTela(dadosFilme) {
     const novoCartao = document.createElement('div');
     novoCartao.classList.add('cartao-filme');
     
     const imagemPoster = dadosFilme.poster 
         ? `<img src="${dadosFilme.poster}" alt="Pôster de ${dadosFilme.titulo}">`
-        : `<div class="poster-placeholder" style="height: 320px; background: #2d2d2d; display: flex; align-items: center; justify-content: center; color: #9ca3af; margin-bottom: 12px; border-radius: 4px;">Sem Pôster</div>`;
+        : `<div class="poster-placeholder" style="height: 300px; background: #2d2d2d; display: flex; align-items: center; justify-content: center; color: #9ca3af; border-radius: 4px;">Sem Pôster</div>`;
 
     novoCartao.innerHTML = `
-        ${imagemPoster}
+        <div class="midia-container">
+            ${imagemPoster}
+        </div>
         <h2>${dadosFilme.titulo}</h2>
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
             <span class="ano">${dadosFilme.ano}</span>
@@ -178,9 +180,11 @@ function adicionarFilmeExploracaoNaTela(dadosFilme) {
         <span style="font-size: 0.75rem; color: #9ca3af; text-align: center; display: block; padding: 4px;">Modo Exploração</span>
     `;
 
+    // 🚀 ATIVANDO O EFEITO PREMIUM: Passa o cartão e o ID do filme na API
+    aplicarEfeitoTrailer(novoCartao, dadosFilme.tmdbId);
+
     gridCatalogo.appendChild(novoCartao);
 }
-
 // --- 5. BUSCA DE TOP 20 POR CATEGORIA --- //
 async function carregarTop20PorCategoria(genreId) {
     const url = `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&language=pt-BR&sort_by=vote_average.desc&vote_count.gte=1000&with_genres=${genreId}`;
@@ -192,12 +196,13 @@ async function carregarTop20PorCategoria(genreId) {
         if (dados.results && dados.results.length > 0) {
             dados.results.slice(0, 20).forEach(filme => {
                 const dadosFilme = {
-                    titulo: filme.title,
-                    ano: filme.release_date ? filme.release_date.substring(0, 4) : 'N/A',
-                    sinopse: filme.overview || 'Sinopse não disponível.',
-                    poster: filme.poster_path ? `https://image.tmdb.org/t/p/w500${filme.poster_path}` : null,
-                    nota: filme.vote_average ? filme.vote_average.toFixed(1) : 'N/A'
-                };
+    titulo: filme.title,
+    ano: filme.release_date ? filme.release_date.substring(0, 4) : 'N/A',
+    sinopse: filme.overview || 'Sinopse não disponível.',
+    poster: filme.poster_path ? `https://image.tmdb.org/t/p/w500${filme.poster_path}` : null,
+    nota: filme.vote_average ? filme.vote_average.toFixed(1) : 'N/A',
+    tmdbId: filme.id // <-- ADICIONE ESTA LINHA NAS DUAS FUNÇÕES!
+};
                 adicionarFilmeExploracaoNaTela(dadosFilme);
             });
         }
@@ -227,12 +232,13 @@ async function carregarRecomendacoes() {
             
             cincoRecomendacoes.forEach(filme => {
                 const dadosFilme = {
-                    titulo: filme.title,
-                    ano: filme.release_date ? filme.release_date.substring(0, 4) : 'N/A',
-                    sinopse: filme.overview || 'Sinopse não disponível.',
-                    poster: filme.poster_path ? `https://image.tmdb.org/t/p/w500${filme.poster_path}` : null,
-                    nota: filme.vote_average ? filme.vote_average.toFixed(1) : 'N/A'
-                };
+    titulo: filme.title,
+    ano: filme.release_date ? filme.release_date.substring(0, 4) : 'N/A',
+    sinopse: filme.overview || 'Sinopse não disponível.',
+    poster: filme.poster_path ? `https://image.tmdb.org/t/p/w500${filme.poster_path}` : null,
+    nota: filme.vote_average ? filme.vote_average.toFixed(1) : 'N/A',
+    tmdbId: filme.id // <-- ADICIONE ESTA LINHA NAS DUAS FUNÇÕES!
+};
                 
                 // Reaproveitamos a função visual do "Modo Exploração" para exibi-los
                 adicionarFilmeExploracaoNaTela(dadosFilme);
