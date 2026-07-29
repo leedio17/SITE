@@ -73,7 +73,7 @@ btnAdicionar.addEventListener('click', async function() {
             
             // 3º: Envia silenciosamente para o NOSSO servidor salvar (Rota POST)
             try {
-                await fetch('http://localhost:3000/filmes', {
+                await fetch('https://api-meu-catalogo.onrender.com/filmes', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(dadosFilme)
@@ -95,7 +95,7 @@ btnAdicionar.addEventListener('click', async function() {
 async function carregarListaDoServidor() {
     try {
         // Pede a lista para o nosso servidor (Rota GET)
-        const resposta = await fetch('http://localhost:3000/filmes');
+        const resposta = await fetch('https://api-meu-catalogo.onrender.com/filmes');
         const filmesSalvos = await resposta.json();
         
         // Coloca cada filme retornado pelo servidor na tela
