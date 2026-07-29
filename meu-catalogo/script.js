@@ -3,7 +3,7 @@ const inputFilme = document.getElementById('novo-filme');
 const btnAdicionar = document.getElementById('btn-adicionar');
 const gridCatalogo = document.querySelector('.grid-catalogo');
 
-// COLOQUE SUA CHAVE DE API DO TMDB ABAIXO
+// SUA CHAVE DE API DO TMDB
 const API_KEY = '8bc7947d8c4434f647948194c998adbf'; 
 
 // --- 1. FUNÇÃO QUE CONVERSA COM O TMDB (Busca os pôsteres) --- //
@@ -47,11 +47,10 @@ function adicionarFilmeNaTela(dadosFilme) {
         <button class="btn-remover" style="padding: 5px 10px; background: red; color: white; border: none; border-radius: 4px; cursor: pointer;">Remover</button>
     `;
 
-    // Função de remover integrada com o Back-end
+    // Função de remover integrada com o Back-end usando o link real da Render
     const btnRemover = novoCartao.querySelector('.btn-remover');
     btnRemover.addEventListener('click', async function() {
         try {
-            // USANDO O LINK REAL DA SUA RENDER AQUI:
             await fetch(`https://api-meu-catalogo.onrender.com/filmes/${dadosFilme._id}`, {
                 method: 'DELETE'
             });
@@ -61,6 +60,9 @@ function adicionarFilmeNaTela(dadosFilme) {
             console.error("Erro ao excluir o filme:", erro);
         }
     });
+
+    gridCatalogo.appendChild(novoCartao);
+}
 
 // --- 3. EVENTO DO BOTÃO ADICIONAR --- //
 btnAdicionar.addEventListener('click', async function() {
@@ -74,7 +76,7 @@ btnAdicionar.addEventListener('click', async function() {
         
         if (dadosFilme) {
             try {
-                // 1º: Envia para o back-end salvar e AGORA guardamos a resposta que vem dele
+                // Envia para o back-end salvar e aguarda o objeto de volta contendo o _id do MongoDB
                 const resposta = await fetch('https://api-meu-catalogo.onrender.com/filmes', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -83,7 +85,7 @@ btnAdicionar.addEventListener('click', async function() {
                 
                 const filmeSalvoNoBanco = await resposta.json();
                 
-                // 2º: Mostra na tela usando o objeto que já vem com o _id gerado pelo MongoDB
+                // Mostra na tela usando o ID real do banco
                 adicionarFilmeNaTela(filmeSalvoNoBanco);
 
             } catch (erro) {
@@ -97,19 +99,20 @@ btnAdicionar.addEventListener('click', async function() {
         btnAdicionar.disabled = false;
     }
 });
-// --- 4. CARREGAR DO BACK-END (Substitui o localStorage) --- //
+
+// --- 4. CARREGAR DO BACK-END --- //
 async function carregarListaDoServidor() {
     try {
-        // Pede a lista para o nosso servidor (Rota GET)
         const resposta = await fetch('https://api-meu-catalogo.onrender.com/filmes');
         const filmesSalvos = await resposta.json();
         
-        // Coloca cada filme retornado pelo servidor na tela
-        filmesSalvos.forEach(function(filme) {
-            adicionarFilmeNaTela(filme);
-        });
+        if (Array.isArray(filmesSalvos)) {
+            filmesSalvos.forEach(function(filme) {
+                adicionarFilmeNaTela(filme);
+            });
+        }
     } catch (erro) {
-        console.error('Erro ao conectar com o servidor. O back-end está rodando?', erro);
+        console.error('Erro ao conectar com o servidor:', erro);
     }
 }
 
