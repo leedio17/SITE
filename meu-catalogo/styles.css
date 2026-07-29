@@ -81,6 +81,16 @@ header p {
     margin: 0 auto;
 }
 
+/* --- GRADE DE CATÁLOGO --- */
+.grid-catalogo {
+    display: grid;
+    /* Reduzimos o mínimo de 220px para 200px para caber mais cartões */
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); 
+    gap: 25px; /* Espaçamento levemente ajustado */
+    max-width: 1350px; /* Aumentamos a área total da página para acomodar os 5 */
+    margin: 0 auto;
+}
+
 /* --- CARTÃO DE FILME (ESTILO CARD DE CINEMA) --- */
 .cartao-filme {
     background: #1a1a1a;
@@ -106,29 +116,6 @@ header p {
     object-fit: cover;
     border-radius: 4px;
     margin-bottom: 12px;
-}
-.cartao-filme h2 {
-    font-size: 1.05rem;
-    margin: 0 0 6px 0;
-    color: #ffffff;
-    font-weight: 600;
-}
-
-.cartao-filme .ano {
-    color: #f5c518; /* Ano destacado em amarelo */
-    font-weight: bold;
-    font-size: 0.85rem;
-    display: block;
-    margin-bottom: 8px;
-}
-
-.cartao-filme p {
-    font-size: 0.8rem;
-    color: #9ca3af; /* Sinopse em cinza legível */
-    line-height: 1.4;
-    margin-bottom: 15px;
-    text-align: left;
-    flex-grow: 1;
 }
 
 /* --- BOTÃO
