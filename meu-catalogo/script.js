@@ -273,10 +273,12 @@ botoesCategoria.forEach(botao => {
         gridCatalogo.innerHTML = '';
 
         if (genreId === 'all') {
-            painelNavegacao.style.display = 'none';
+            // Esconde o botão de voltar quando estiver em "Meus Salvos"
+            painelNavegacion.style.display = 'none';
             carregarListaDoServidor();
         } else {
-            painelNavegacao.style.display = 'block';
+            // Mostra explicitamente o botão de voltar quando estiver explorando os Top 20
+            painelNavegacion.style.display = 'block';
             await carregarTop20PorCategoria(genreId);
         }
     });
@@ -284,8 +286,10 @@ botoesCategoria.forEach(botao => {
 
 if (btnVoltar) {
     btnVoltar.addEventListener('click', function() {
-        painelNavegacao.style.display = 'none';
+        // Esconde o painel de navegação ao retornar
+        painelNavegacion.style.display = 'none';
         
+        // Reseta os estilos dos botões de categoria para focar em "Meus Salvos"
         botoesCategoria.forEach(b => {
             if (b.getAttribute('data-genre') === 'all') {
                 b.style.background = '#f5c518';
@@ -298,10 +302,10 @@ if (btnVoltar) {
             }
         });
 
+        // Limpa a grade e recarrega os salvos do MongoDB
         gridCatalogo.innerHTML = '';
         carregarListaDoServidor();
     });
 }
-
 // Inicializa carregando os salvos ao abrir a página
 carregarListaDoServidor();
