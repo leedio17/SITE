@@ -51,7 +51,7 @@ function adicionarFilmeNaTela(dadosFilme) {
     const btnRemover = novoCartao.querySelector('.btn-remover');
     btnRemover.addEventListener('click', async function() {
         try {
-            await fetch(`https://SUA-API-NA-RENDER.onrender.com/filmes/${dadosFilme._id}`, {
+            await fetch(`https://api-meu-catalogo.onrender.com/${dadosFilme._id}`, {
                 method: 'DELETE'
             });
             
