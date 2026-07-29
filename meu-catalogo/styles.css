@@ -74,9 +74,10 @@ header p {
 /* --- GRADE DE CATÁLOGO --- */
 .grid-catalogo {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 30px;
-    max-width: 1200px;
+    /* Reduzimos o mínimo de 220px para 200px para caber mais cartões */
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); 
+    gap: 25px; /* Espaçamento levemente ajustado */
+    max-width: 1350px; /* Aumentamos a área total da página para acomodar os 5 */
     margin: 0 auto;
 }
 
@@ -95,17 +96,17 @@ header p {
 
 .cartao-filme:hover {
     transform: translateY(-6px);
-    border-color: #f5c518; /* Destaca a borda em amarelo ao passar o mouse */
+    border-color: #f5c518;
 }
 
 .cartao-filme img {
     width: 100%;
-    height: 320px;
+    /* Altura ajustada para 300px para manter a proporção com o cartão mais estreito */
+    height: 300px; 
     object-fit: cover;
     border-radius: 4px;
     margin-bottom: 12px;
 }
-
 .cartao-filme h2 {
     font-size: 1.05rem;
     margin: 0 0 6px 0;
