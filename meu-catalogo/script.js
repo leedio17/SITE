@@ -290,4 +290,61 @@ function adicionarFilmeExploracaoNaTela(dadosFilme) {
 
     gridCatalogo.appendChild(novoCartao);
 }
+
+// Pegando o painel e o botão de voltar que acabamos de criar no HTML
+const painelNavegacao = document.getElementById('painel-navegacion');
+const btnVoltar = document.getElementById('btn-voltar');
+
+const botoesCategoria = document.querySelectorAll('.btn-categoria');
+
+botoesCategoria.forEach(botao => {
+    botao.addEventListener('click', async function() {
+        // Atualiza o visual dos botões de categoria
+        botoesCategoria.forEach(b => {
+            b.style.background = '#1f1f1f';
+            b.style.color = '#f3f4f6';
+            b.style.border = '1px solid #374151';
+        });
+        this.style.background = '#f5c518';
+        this.style.color = '#121212';
+        this.style.border = 'none';
+
+        const genreId = this.getAttribute('data-genre');
+        gridCatalogo.innerHTML = '';
+
+        if (genreId === 'all') {
+            // Se for "Meus Salvos", esconde o botão de voltar
+            painelNavegacao.style.display = 'none';
+            carregarListaDoServidor();
+        } else {
+            // Se escolher uma categoria, MOSTRA o botão de voltar
+            painelNavegacao.style.display = 'block';
+            await carregarTop20PorCategoria(genreId);
+        }
+    });
+});
+
+// Ação do Botão de Retorno
+btnVoltar.addEventListener('click', function() {
+    // Esconde o painel de navegação
+    painelNavegacao.style.display = 'none';
+    
+    // Reseta o estilo visual dos botões para focar em "Meus Salvos"
+    botoesCategoria.forEach(b => {
+        if (b.getAttribute('data-genre') === 'all') {
+            b.style.background = '#f5c518';
+            b.style.color = '#121212';
+            b.style.border = 'none';
+        } else {
+            b.style.background = '#1f1f1f';
+            b.style.color = '#f3f4f6';
+            b.style.border = '1px solid #374151';
+        }
+    });
+
+    // Limpa a grade e recarrega os filmes salvos do usuário
+    gridCatalogo.innerHTML = '';
+    carregarListaDoServidor();
+});
+
 carregarListaDoServidor();
