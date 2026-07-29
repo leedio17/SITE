@@ -3,62 +3,111 @@ const inputFilme = document.getElementById('novo-filme');
 const btnAdicionar = document.getElementById('btn-adicionar');
 const gridCatalogo = document.querySelector('.grid-catalogo');
 
-// Função principal: Cria o elemento visual na tela (Manipulação do DOM)
-function adicionarFilmeNaTela(nome) {
-    // Cria um novo 'cartão' de filme
+// COLOQUE SUA CHAVE DE API ABAIXO (Mantenha as aspas)
+const API_KEY = 'SUA_CHAVE_AQUI'; 
+
+// --- 1. FUNÇÃO QUE CONVERSA COM A API DO TMDB --- //
+async function buscarFilmeNaAPI(nome) {
+    // Monta a URL de busca em português
+    const url = `https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&language=pt-BR&query=${encodeURIComponent(nome)}`;
+
+    try {
+        const resposta = await fetch(url);
+        const dados = await resposta.json();
+
+        // Verifica se a API encontrou algum resultado
+        if (dados.results && dados.results.length > 0) {
+            const filme = dados.results[0]; // Pega o primeiro filme da lista
+            
+            // Retorna um objeto organizando os dados que precisamos
+            return {
+                titulo: filme.title,
+                ano: filme.release_date ? filme.release_date.substring(0, 4) : 'Ano desconhecido',
+                sinopse: filme.overview || 'Sinopse não disponível em português.',
+                // Monta o link da imagem oficial (w500 é o tamanho da imagem)
+                poster: filme.poster_path ? `https://image.tmdb.org/t/p/w500${filme.poster_path}` : null
+            };
+        } else {
+            alert('Filme não encontrado no banco de dados!');
+            return null;
+        }
+    } catch (erro) {
+        console.error('Erro ao buscar o filme:', erro);
+        alert('Ocorreu um erro ao buscar o filme. Verifique sua conexão ou a Chave da API.');
+        return null;
+    }
+}
+
+// --- 2. FUNÇÃO QUE CRIA O VISUAL NA TELA --- //
+function adicionarFilmeNaTela(dadosFilme) {
     const novoCartao = document.createElement('div');
     novoCartao.classList.add('cartao-filme');
     
-    // Define o conteúdo dentro do cartão
+    // Verifica se o filme tem pôster, se não tiver, usa um texto alternativo
+    const imagemPoster = dadosFilme.poster 
+        ? `<img src="${dadosFilme.poster}" alt="Pôster de ${dadosFilme.titulo}" style="width: 100%; border-radius: 4px; margin-bottom: 15px;">`
+        : `<div class="poster-placeholder" style="height: 350px; background: #ddd; display: flex; align-items: center; justify-content: center;">Sem Pôster</div>`;
+
+    // Preenche o HTML do cartão com os dados reais da API
     novoCartao.innerHTML = `
-        <div class="poster-placeholder">Pôster Genérico</div>
-        <h2>${nome}</h2>
-        <span class="ano">2024</span>
-        <button class="btn-remover" style="margin-top: 10px; padding: 5px; background: red; color: white; border: none; border-radius: 4px; cursor: pointer;">Remover</button>
+        ${imagemPoster}
+        <h2>${dadosFilme.titulo}</h2>
+        <span class="ano" style="color: #007bff; font-weight: bold; display: block; margin-bottom: 10px;">${dadosFilme.ano}</span>
+        <p style="font-size: 0.9rem; color: #555; text-align: left; margin-bottom: 15px;">${dadosFilme.sinopse}</p>
+        <button class="btn-remover" style="padding: 5px 10px; background: red; color: white; border: none; border-radius: 4px; cursor: pointer;">Remover</button>
     `;
 
-    // Adiciona o evento de 'clique' no botão de remover
+    // Função de remover
     const btnRemover = novoCartao.querySelector('.btn-remover');
     btnRemover.addEventListener('click', function() {
-        novoCartao.remove(); // Remove o filme da tela
-        salvarLista(); // Atualiza o armazenamento local para não voltar quando recarregar
+        novoCartao.remove(); 
+        salvarLista(); 
     });
 
-    // Adiciona o novo cartão na nossa grade de filmes
     gridCatalogo.appendChild(novoCartao);
 }
 
-// Evento de 'clique' no botão "Adicionar à Lista"
-btnAdicionar.addEventListener('click', function() {
-    const nomeDoFilme = inputFilme.value; // Pega o que o usuário digitou
+// --- 3. EVENTO DO BOTÃO ADICIONAR --- //
+btnAdicionar.addEventListener('click', async function() {
+    const nomeDoFilme = inputFilme.value; 
     
-    // Verifica se o campo não está vazio
     if (nomeDoFilme.trim() !== '') {
-        adicionarFilmeNaTela(nomeDoFilme);
-        salvarLista(); // Salva a alteração
-        inputFilme.value = ''; // Limpa o campo de texto
+        btnAdicionar.innerText = 'Buscando...'; // Feedback visual
+        btnAdicionar.disabled = true; // Impede duplo clique
+
+        // Espera a resposta da API
+        const dadosFilme = await buscarFilmeNaAPI(nomeDoFilme);
+        
+        // Se a API retornou dados válidos, coloca na tela
+        if (dadosFilme) {
+            adicionarFilmeNaTela(dadosFilme);
+            salvarLista(); 
+            inputFilme.value = ''; 
+        }
+
+        btnAdicionar.innerText = 'Adicionar à Lista';
+        btnAdicionar.disabled = false;
     }
 });
 
-// --- SISTEMA DE SALVAMENTO (localStorage) --- //
-
-// Função para salvar a lista no navegador para que não desapareça 
+// --- 4. SISTEMA DE SALVAMENTO (localStorage) --- //
 function salvarLista() {
-    const titulos = [];
-    // Pega todos os títulos (h2) que estão na tela atualmente
-    document.querySelectorAll('.cartao-filme h2').forEach(function(titulo) {
-        titulos.push(titulo.innerText);
+    const filmes = [];
+    // Varre todos os cartões na tela e extrai os dados para salvar
+    document.querySelectorAll('.cartao-filme').forEach(function(cartao) {
+        filmes.push({
+            titulo: cartao.querySelector('h2').innerText,
+            ano: cartao.querySelector('.ano').innerText,
+            sinopse: cartao.querySelector('p').innerText,
+            poster: cartao.querySelector('img') ? cartao.querySelector('img').src : null
+        });
     });
-    // Salva no localStorage como texto (JSON)
-    localStorage.setItem('meusFilmes', JSON.stringify(titulos));
+    // Mudamos o nome da chave para 'meusFilmesAPICatalogo' para começar uma lista limpa
+    localStorage.setItem('meusFilmesAPICatalogo', JSON.stringify(filmes));
 }
 
-// Função para carregar a lista quando a página for aberta/recarregada
 function carregarLista() {
-    // Pega os dados salvos ou cria uma lista vazia se for a primeira vez
-    const filmesSalvos = JSON.parse(localStorage.getItem('meusFilmes') || '[]');
-    
-    // Para cada filme salvo, adiciona na tela
+    const filmesSalvos = JSON.parse(localStorage.getItem('meusFilmesAPICatalogo') || '[]');
     filmesSalvos.forEach(function(filme) {
         adicionarFilmeNaTela(filme);
     });
