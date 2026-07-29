@@ -44,23 +44,25 @@ function adicionarFilmeNaTela(dadosFilme) {
         <h2>${dadosFilme.titulo}</h2>
         <span class="ano" style="color: #007bff; font-weight: bold; display: block; margin-bottom: 10px;">${dadosFilme.ano}</span>
         <p style="font-size: 0.9rem; color: #555; text-align: left; margin-bottom: 15px;">${dadosFilme.sinopse}</p>
-        <button class="btn-remover" style="padding: 5px 10px; background: red; color: white; border: none; border-radius: 4px; cursor: pointer;">Remover da Tela</button>
+        <button class="btn-remover" style="padding: 5px 10px; background: red; color: white; border: none; border-radius: 4px; cursor: pointer;">Remover</button>
     `;
 
-    // Função de remover (Por enquanto remove só da tela, no futuro faremos a rota DELETE no back-end)
+    // Função de remover integrada com o Back-end
     const btnRemover = novoCartao.querySelector('.btn-remover');
-btnRemover.addEventListener('click', async function() {
-    try {
-        // Envia o pedido de exclusão para o back-end usando o ID único do MongoDB
-        await fetch(`https://SUA-API-NA-RENDER.onrender.com/filmes/${dadosFilme._id}`, {
-            method: 'DELETE'
-        });
-        
-        novoCartao.remove(); // Remove da tela visualmente
-    } catch (erro) {
-        console.error("Erro ao excluir o filme:", erro);
-    }
-});
+    btnRemover.addEventListener('click', async function() {
+        try {
+            await fetch(`https://SUA-API-NA-RENDER.onrender.com/filmes/${dadosFilme._id}`, {
+                method: 'DELETE'
+            });
+            
+            novoCartao.remove(); // Remove da tela visualmente
+        } catch (erro) {
+            console.error("Erro ao excluir o filme:", erro);
+        }
+    });
+
+    gridCatalogo.appendChild(novoCartao);
+}
 
 // --- 3. EVENTO DO BOTÃO ADICIONAR --- //
 btnAdicionar.addEventListener('click', async function() {
@@ -97,7 +99,6 @@ btnAdicionar.addEventListener('click', async function() {
         btnAdicionar.disabled = false;
     }
 });
-
 // --- 4. CARREGAR DO BACK-END (Substitui o localStorage) --- //
 async function carregarListaDoServidor() {
     try {
