@@ -327,6 +327,10 @@ botoesCategoria.forEach(botao => {
             // Se for "Recomendação", mostra o botão de voltar e carrega as sugestões aleatórias
             painelNavegacao.style.display = 'block';
             await carregarRecomendacoes();
+        } else if (genreId === 'trending') {
+            // NOVO: Se for "Top 10 Semanal", mostra o botão de voltar e busca os em alta
+            painelNavegacao.style.display = 'block';
+            await carregarTop10Semanal();
         } else {
             // Se escolher uma categoria Top 20, mostra o botão de voltar
             painelNavegacao.style.display = 'block';
@@ -410,5 +414,8 @@ function aplicarEfeitoTrailer(cartao, tmdbId) {
         }
     });
 }
+
+carregarTop10Semanal();
+
 // Inicializa carregando os salvos ao abrir a página
 carregarListaDoServidor();
