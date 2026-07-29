@@ -273,11 +273,15 @@ botoesCategoria.forEach(botao => {
         gridCatalogo.innerHTML = '';
 
         if (genreId === 'all') {
-            // CORRIGIDO: Usando painelNavegacao (com 'a')
+            // Esconde o botão de voltar quando estiver em "Meus Salvos"
             painelNavegacao.style.display = 'none';
             carregarListaDoServidor();
+        } else if (genreId === 'recomendacao') {
+            // Mostra o botão de voltar e carrega as recomendações
+            painelNavegacao.style.display = 'block';
+            await carregarRecomendacoes();
         } else {
-            // CORRIGIDO: Usando painelNavegacao (com 'a')
+            // Mostra explicitamente o botão de voltar quando estiver explorando os Top 20
             painelNavegacao.style.display = 'block';
             await carregarTop20PorCategoria(genreId);
         }
