@@ -74,24 +74,14 @@ header p {
 /* --- GRADE DE CATÁLOGO --- */
 .grid-catalogo {
     display: grid;
-    /* Reduzimos o mínimo de 220px para 200px para caber mais cartões */
+    /* Configuração para caberem 5 filmes por fileira em telas grandes */
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); 
-    gap: 25px; /* Espaçamento levemente ajustado */
-    max-width: 1350px; /* Aumentamos a área total da página para acomodar os 5 */
+    gap: 25px; 
+    max-width: 1350px; 
     margin: 0 auto;
 }
 
-/* --- GRADE DE CATÁLOGO --- */
-.grid-catalogo {
-    display: grid;
-    /* Reduzimos o mínimo de 220px para 200px para caber mais cartões */
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); 
-    gap: 25px; /* Espaçamento levemente ajustado */
-    max-width: 1350px; /* Aumentamos a área total da página para acomodar os 5 */
-    margin: 0 auto;
-}
-
-/* --- CARTÃO DE FILME (ESTILO CARD DE CINEMA) --- */
+/* --- CARTÃO DE FILME (ESTILO CARD DE CINEMA PREMIUM) --- */
 .cartao-filme {
     background: #1a1a1a;
     border: 1px solid #2d2d2d;
@@ -113,7 +103,7 @@ header p {
     z-index: 10; /* Garante que o cartão levante por cima dos outros */
 }
 
-/* O contêiner da imagem/vídeo */
+/* O contêiner da imagem/vídeo para o Trailer */
 .midia-container {
     width: 100%;
     height: 300px;
@@ -142,4 +132,59 @@ header p {
     opacity: 0;
     pointer-events: none; /* Evita roubar o clique do usuário */
     transition: opacity 0.5s ease;
+}
+
+/* --- LIMITANDO O TAMANHO DO TÍTULO --- */
+.cartao-filme h2 {
+    font-size: 1.05rem;
+    margin: 0 0 6px 0;
+    color: #ffffff;
+    font-weight: 600;
+    /* Trava o título em no máximo 2 linhas */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.cartao-filme .ano {
+    color: #f5c518; /* Ano destacado em amarelo */
+    font-weight: bold;
+    font-size: 0.85rem;
+    display: block;
+    margin-bottom: 8px;
+}
+
+/* --- LIMITANDO O TAMANHO DA SINOPSE --- */
+.cartao-filme p {
+    font-size: 0.8rem;
+    color: #9ca3af; 
+    line-height: 1.4;
+    margin-bottom: 15px;
+    text-align: left;
+    flex-grow: 1;
+    /* Trava a sinopse em no máximo 4 linhas e adiciona "..." */
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* --- ESTILO DO BOTÃO DE REMOVER --- */
+.btn-remover {
+    background-color: #374151;
+    color: #ffffff;
+    border: none;
+    border-radius: 4px;
+    padding: 8px;
+    font-size: 0.85rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    width: 100%;
+    text-align: center;
+}
+
+.btn-remover:hover {
+    background-color: #ef4444; /* Fica vermelho ao passar o mouse */
 }
