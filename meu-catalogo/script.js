@@ -414,7 +414,37 @@ function aplicarEfeitoTrailer(cartao, tmdbId) {
         }
     });
 }
-
+// --- FUNÇÃO EXCLUSIVA PARA O TOP 10 SEMANAL --- //
+async function carregarTop10Semanal() {
+    // Rota específica do TMDB para filmes em alta (trending) na semana
+    const url = `https://api.themoviedb.org/3/trending/movie/week?api_key=${API_KEY}&language=pt-BR`;
+    
+    try {
+        const resposta = await fetch(url);
+        const dados = await resposta.json();
+        
+        if (dados.results && dados.results.length > 0) {
+            // Cortamos a lista para pegar exatamente o Top 10
+            const top10 = dados.results.slice(0, 10);
+            
+            top10.forEach(filme => {
+                const dadosFilme = {
+                    titulo: filme.title,
+                    ano: filme.release_date ? filme.release_date.substring(0, 4) : 'N/A',
+                    sinopse: filme.overview || 'Sinopse não disponível.',
+                    poster: filme.poster_path ? `https://image.tmdb.org/t/p/w500${filme.poster_path}` : null,
+                    nota: filme.vote_average ? filme.vote_average.toFixed(1) : 'N/A',
+                    tmdbId: filme.id // Mantém o ID para o efeito do trailer funcionar!
+                };
+                
+                // Aproveita a renderização visual do modo de exploração
+                adicionarFilmeExploracaoNaTela(dadosFilme);
+            });
+        }
+    } catch (erro) {
+        console.error('Erro ao carregar o Top 10 semanal:', erro);
+    }
+}
 carregarTop10Semanal();
 
 // Inicializa carregando os salvos ao abrir a página
