@@ -49,14 +49,20 @@ function adicionarFilmeNaTela(dadosFilme) {
 
     // Função de remover (Por enquanto remove só da tela, no futuro faremos a rota DELETE no back-end)
     const btnRemover = novoCartao.querySelector('.btn-remover');
-    btnRemover.addEventListener('click', function() {
-        novoCartao.remove(); 
-    });
+btnRemover.addEventListener('click', async function() {
+    try {
+        // Envia o pedido de exclusão para o back-end usando o ID único do MongoDB
+        await fetch(`https://SUA-API-NA-RENDER.onrender.com/filmes/${dadosFilme._id}`, {
+            method: 'DELETE'
+        });
+        
+        novoCartao.remove(); // Remove da tela visualmente
+    } catch (erro) {
+        console.error("Erro ao excluir o filme:", erro);
+    }
+});
 
-    gridCatalogo.appendChild(novoCartao);
-}
-
-// --- 3. EVENTO DO BOTÃO ADICIONAR (Agora envia para o nosso Back-end!) --- //
+// --- 3. EVENTO DO BOTÃO ADICIONAR --- //
 btnAdicionar.addEventListener('click', async function() {
     const nomeDoFilme = inputFilme.value; 
     
@@ -64,21 +70,22 @@ btnAdicionar.addEventListener('click', async function() {
         btnAdicionar.innerText = 'Buscando...'; 
         btnAdicionar.disabled = true; 
 
-        // 1º: Busca os dados reais na API do TMDB
         const dadosFilme = await buscarFilmeNaAPI(nomeDoFilme);
         
         if (dadosFilme) {
-            // 2º: Mostra na tela
-            adicionarFilmeNaTela(dadosFilme);
-            
-            // 3º: Envia silenciosamente para o NOSSO servidor salvar (Rota POST)
             try {
-                await fetch('https://api-meu-catalogo.onrender.com/filmes', {
+                // 1º: Envia para o back-end salvar e AGORA guardamos a resposta que vem dele
+                const resposta = await fetch('https://SUA-API-NA-RENDER.onrender.com/filmes', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(dadosFilme)
                 });
-                console.log("Filme salvo no back-end!");
+                
+                const filmeSalvoNoBanco = await resposta.json();
+                
+                // 2º: Mostra na tela usando o objeto que já vem com o _id gerado pelo MongoDB
+                adicionarFilmeNaTela(filmeSalvoNoBanco);
+
             } catch (erro) {
                 console.error("Erro ao salvar no back-end:", erro);
             }
