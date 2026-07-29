@@ -101,21 +101,45 @@ header p {
     flex-direction: column;
     justify-content: space-between;
     padding: 12px;
-    transition: transform 0.3s ease, border-color 0.3s ease;
+    position: relative; /* Necessário para o vídeo sobrepor depois */
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease, border-color 0.4s ease;
 }
 
+/* Efeito Glow Premium */
 .cartao-filme:hover {
-    transform: translateY(-6px);
+    transform: translateY(-10px) scale(1.02);
     border-color: #f5c518;
+    box-shadow: 0 15px 30px rgba(245, 197, 24, 0.2), 0 5px 15px rgba(0, 0, 0, 0.5);
+    z-index: 10; /* Garante que o cartão levante por cima dos outros */
+}
+
+/* O contêiner da imagem/vídeo */
+.midia-container {
+    width: 100%;
+    height: 300px;
+    position: relative;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 12px;
+    background: #000;
 }
 
 .cartao-filme img {
     width: 100%;
-    /* Altura ajustada para 300px para manter a proporção com o cartão mais estreito */
-    height: 300px; 
+    height: 100%;
     object-fit: cover;
-    border-radius: 4px;
-    margin-bottom: 12px;
+    transition: opacity 0.3s ease;
 }
 
-/* --- BOTÃO
+/* Esconde o iframe do YouTube inicialmente */
+.cartao-filme iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+    opacity: 0;
+    pointer-events: none; /* Evita roubar o clique do usuário */
+    transition: opacity 0.5s ease;
+}
