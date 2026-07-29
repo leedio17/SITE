@@ -181,5 +181,86 @@ async function carregarListaDoServidor() {
         console.error('Erro ao conectar com o servidor:', erro);
     }
 }
+// --- 6. LÓGICA DE FILTROS E TOP 20 DO IMDB POR CATEGORIA --- //
+const botoesCategoria = document.querySelectorAll('.btn-categoria');
 
+botoesCategoria.forEach(botao => {
+    botao.addEventListener('click', async function() {
+        // Remove a classe ativa de todos e coloca no clicado
+        botoesCategoria.forEach(b => {
+            b.style.background = '#1f1f1f';
+            b.style.color = '#f3f4f6';
+            b.style.border = '1px solid #374151';
+        });
+        this.style.background = '#f5c518';
+        this.style.color = '#121212';
+        this.style.border = 'none';
+
+        const genreId = this.getAttribute('data-genre');
+        
+        // Limpa a grade atual
+        gridCatalogo.innerHTML = '';
+
+        if (genreId === 'all') {
+            // Se clicar em "Meus Salvos", recarrega a lista do banco de dados na nuvem
+            carregarListaDoServidor();
+        } else {
+            // Se escolher uma categoria, busca os Top 20 ordenados por nota no TMDB
+            await carregarTop20PorCategoria(genreId);
+        }
+    });
+});
+
+async function carregarTop20PorCategoria(genreId) {
+    // A rota /discover/movie ordena por popularidade ou vote_average (nota do IMDb) decrescente
+    const url = `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&language=pt-BR&sort_by=vote_average.desc&vote_count.gte=1000&with_genres=${genreId}`;
+    
+    try {
+        const resposta = await fetch(url);
+        const dados = await resposta.json();
+        
+        if (dados.results && dados.results.length > 0) {
+            // Pega exatamente os 20 primeiros
+            dados.results.slice(0, 20).forEach(filme => {
+                const dadosFilme = {
+                    titulo: filme.title,
+                    ano: filme.release_date ? filme.release_date.substring(0, 4) : 'N/A',
+                    sinopse: filme.overview || 'Sinopse não disponível.',
+                    poster: filme.poster_path ? `https://image.tmdb.org/t/p/w500${filme.poster_path}` : null,
+                    // Nota do IMDb/TMDB para enfeitar o card se quiser
+                    nota: filme.vote_average ? filme.vote_average.toFixed(1) : 'N/A'
+                };
+                
+                // Exibe na tela (nota: os filmes do Top 20 explorados por categoria 
+                // não terão o botão de deletar do banco, pois são apenas para visualização/descoberta!)
+                adicionarFilmeExploracaoNaTela(dadosFilme);
+            });
+        }
+    } catch (erro) {
+        console.error('Erro ao carregar top 20 da categoria:', erro);
+    }
+}
+
+// Função visual específica para os filmes do Top 20 (sem botão de lixeira do banco)
+function adicionarFilmeExploracaoNaTela(dadosFilme) {
+    const novoCartao = document.createElement('div');
+    novoCartao.classList.add('cartao-filme');
+    
+    const imagemPoster = dadosFilme.poster 
+        ? `<img src="${dadosFilme.poster}" alt="Pôster de ${dadosFilme.titulo}">`
+        : `<div class="poster-placeholder" style="height: 320px; background: #2d2d2d; display: flex; align-items: center; justify-content: center; color: #9ca3af; margin-bottom: 12px; border-radius: 4px;">Sem Pôster</div>`;
+
+    novoCartao.innerHTML = `
+        ${imagemPoster}
+        <h2>${dadosFilme.titulo}</h2>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <span class="ano">${dadosFilme.ano}</span>
+            <span style="color: #f5c518; font-weight: bold; font-size: 0.85rem;">⭐ ${dadosFilme.nota}</span>
+        </div>
+        <p>${dadosFilme.sinopse}</p>
+        <span style="font-size: 0.75rem; color: #9ca3af; text-align: center; display: block; padding: 4px;">Modo Exploração</span>
+    `;
+
+    gridCatalogo.appendChild(novoCartao);
+}
 carregarListaDoServidor();
