@@ -228,7 +228,7 @@ async function carregarRecomendacoes() {
             const filmesEmbaralhados = dados.results.sort(() => 0.5 - Math.random());
             
             // ...e cortar apenas os 5 primeiros!
-            const cincoRecomendacoes = filmesEmbaralhados.slice(0, 5);
+            const cincoRecomendacoes = filmesEmbaralhados.slice(0, 10);
             
             cincoRecomendacoes.forEach(filme => {
                 const dadosFilme = {
