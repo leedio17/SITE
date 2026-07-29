@@ -110,14 +110,41 @@ function adicionarFilmeNaTela(dadosFilme) {
         ? `<img src="${dadosFilme.poster}" alt="Pôster de ${dadosFilme.titulo}">`
         : `<div class="poster-placeholder" style="height: 320px; background: #2d2d2d; display: flex; align-items: center; justify-content: center; color: #9ca3af; margin-bottom: 12px; border-radius: 4px;">Sem Pôster</div>`;
 
+    // Coração mudando de cor dependendo se é favorito ou não
+    const corFavorito = dadosFilme.favorito ? '#ef4444' : '#9ca3af';
+
     novoCartao.innerHTML = `
         ${imagemPoster}
-        <h2>${dadosFilme.titulo}</h2>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h2>${dadosFilme.titulo}</h2>
+            <button class="btn-favorito" style="background: none; border: none; font-size: 1.3rem; cursor: pointer; color: ${corFavorito};">❤️</button>
+        </div>
         <span class="ano">${dadosFilme.ano}</span>
         <p>${dadosFilme.sinopse}</p>
         <button class="btn-remover">Remover</button>
     `;
 
+    // Ação do Botão de Favorito
+    const btnFavorito = novoCartao.querySelector('.btn-favorito');
+    btnFavorito.addEventListener('click', async function() {
+        try {
+            const novoStatus = !dadosFilme.favorito;
+            const resposta = await fetch(`https://api-meu-catalogo.onrender.com/filmes/${dadosFilme._id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ favorito: novoStatus })
+            });
+            
+            if (resposta.ok) {
+                dadosFilme.favorito = novoStatus;
+                btnFavorito.style.color = novoStatus ? '#ef4444' : '#9ca3af';
+            }
+        } catch (erro) {
+            console.error("Erro ao atualizar favorito:", erro);
+        }
+    });
+
+    // Ação do Botão de Remover
     const btnRemover = novoCartao.querySelector('.btn-remover');
     btnRemover.addEventListener('click', async function() {
         try {
