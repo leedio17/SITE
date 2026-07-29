@@ -1,10 +1,10 @@
-/* --- ESTILO GERAL DO SITE --- */
+/* --- TEMA ESCURO ESTILO IMDB --- */
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f4f6f9;
-    color: #333;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background-color: #121212; /* Fundo preto elegante */
+    color: #f3f4f6; /* Texto claro */
     margin: 0;
-    padding: 20px;
+    padding: 30px 20px;
 }
 
 header {
@@ -13,38 +13,50 @@ header {
 }
 
 header h1 {
-    color: #1f2937;
-    margin-bottom: 10px;
+    color: #f5c518; /* Amarelo clássico do IMDb */
+    font-size: 2.5rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+    text-transform: uppercase;
 }
 
-/* --- ÁREA DO FORMULÁRIO (INPUT E BOTÃO) --- */
+header p {
+    color: #9ca3af;
+    font-size: 1rem;
+}
+
+/* --- PAINEL DE CONTROLE (BUSCA) --- */
 .painel-controle {
     display: flex;
     justify-content: center;
-    gap: 10px;
+    gap: 12px;
     margin-bottom: 40px;
 }
 
 #novo-filme {
-    padding: 12px 15px;
-    width: 300px;
-    border: 1px solid #d1d5db;
-    border-radius: 8px;
+    padding: 14px 18px;
+    width: 340px;
+    background-color: #1f1f1f;
+    border: 1px solid #374151;
+    border-radius: 6px;
+    color: #ffffff;
     font-size: 1rem;
     outline: none;
-    transition: border-color 0.2s;
+    transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 #novo-filme:focus {
-    border-color: #3b82f6;
+    border-color: #f5c518;
+    box-shadow: 0 0 0 2px rgba(245, 197, 24, 0.2);
 }
 
 #btn-adicionar {
-    padding: 12px 20px;
-    background-color: #3b82f6;
-    color: white;
+    padding: 14px 24px;
+    background-color: #f5c518; /* Botão principal em amarelo IMDb */
+    color: #121212;
     border: none;
-    border-radius: 8px;
+    border-radius: 6px;
     font-size: 1rem;
     font-weight: bold;
     cursor: pointer;
@@ -52,86 +64,70 @@ header h1 {
 }
 
 #btn-adicionar:hover {
-    background-color: #2563eb;
+    background-color: #e2b610;
 }
 
 #btn-adicionar:active {
     transform: scale(0.98);
 }
 
-/* --- GRADE DE CATÁLOGO (GRID RESPONSIVO) --- */
+/* --- GRADE DE CATÁLOGO --- */
 .grid-catalogo {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    gap: 25px;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 30px;
     max-width: 1200px;
     margin: 0 auto;
 }
 
-/* --- CARTÃO DE FILME INDIVIDUAL (CSS AVANÇADO) --- */
+/* --- CARTÃO DE FILME (ESTILO CARD DE CINEMA) --- */
 .cartao-filme {
-    background: #ffffff;
-    border-radius: 12px;
+    background: #1a1a1a;
+    border: 1px solid #2d2d2d;
+    border-radius: 8px;
     overflow: hidden;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    padding: 15px;
-    transition: transform 0.3s ease, box-shadow 0.3s ease; /* Efeito suave */
+    padding: 12px;
+    transition: transform 0.3s ease, border-color 0.3s ease;
 }
 
-/* Efeito de Zoom e Sombra Elevada ao passar o mouse */
 .cartao-filme:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    transform: translateY(-6px);
+    border-color: #f5c518; /* Destaca a borda em amarelo ao passar o mouse */
 }
 
 .cartao-filme img {
     width: 100%;
-    height: 340px;
+    height: 320px;
     object-fit: cover;
-    border-radius: 8px;
-    margin-bottom: 15px;
+    border-radius: 4px;
+    margin-bottom: 12px;
 }
 
 .cartao-filme h2 {
-    font-size: 1.15rem;
-    margin: 0 0 8px 0;
-    color: #1f2937;
+    font-size: 1.05rem;
+    margin: 0 0 6px 0;
+    color: #ffffff;
+    font-weight: 600;
 }
 
 .cartao-filme .ano {
-    color: #3b82f6;
+    color: #f5c518; /* Ano destacado em amarelo */
     font-weight: bold;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     display: block;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
 }
 
 .cartao-filme p {
-    font-size: 0.85rem;
-    color: #6b7280;
+    font-size: 0.8rem;
+    color: #9ca3af; /* Sinopse em cinza legível */
     line-height: 1.4;
     margin-bottom: 15px;
     text-align: left;
-    flex-grow: 1; /* Garante alinhamento consistente do botão */
+    flex-grow: 1;
 }
 
-/* --- BOTÃO DE REMOVER ESTILIZADO --- */
-.btn-remover {
-    padding: 8px 12px;
-    background-color: #ef4444;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.2s;
-    width: 100%;
-}
-
-.btn-remover:hover {
-    background-color: #dc2626;
-}
+/* --- BOTÃO
