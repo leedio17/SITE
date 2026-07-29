@@ -4,7 +4,7 @@ const btnAdicionar = document.getElementById('btn-adicionar');
 const gridCatalogo = document.querySelector('.grid-catalogo');
 
 // COLOQUE SUA CHAVE DE API ABAIXO (Mantenha as aspas)
-const API_KEY = 'SUA_CHAVE_AQUI'; 
+const API_KEY = '8bc7947d8c4434f647948194c998adbf'; 
 
 // --- 1. FUNÇÃO QUE CONVERSA COM A API DO TMDB --- //
 async function buscarFilmeNaAPI(nome) {
