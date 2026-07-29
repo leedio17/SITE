@@ -354,5 +354,55 @@ if (btnVoltar) {
     });
 }
 
+// --- EFEITO PREMIUM: TRAILER NO HOVER --- //
+function aplicarEfeitoTrailer(cartao, tmdbId) {
+    let temporizador;
+    const containerMidia = cartao.querySelector('.midia-container');
+    const imagem = containerMidia.querySelector('img');
+    let iframeCriado = containerMidia.querySelector('iframe');
+
+    cartao.addEventListener('mouseenter', () => {
+        // Inicia o cronômetro de 1.5 segundos
+        temporizador = setTimeout(async () => {
+            // Se o iframe ainda não foi criado, busca na API
+            if (!iframeCriado && tmdbId) {
+                try {
+                    const url = `https://api.themoviedb.org/3/movie/${tmdbId}/videos?api_key=${API_KEY}&language=pt-BR`;
+                    const resposta = await fetch(url);
+                    const dados = await resposta.json();
+                    
+                    // Procura o trailer oficial no YouTube
+                    const trailer = dados.results.find(vid => vid.site === 'YouTube' && vid.type === 'Trailer');
+                    
+                    if (trailer) {
+                        iframeCriado = document.createElement('iframe');
+                        // Autoplay, mudo, sem controles e em loop
+                        iframeCriado.src = `https://www.youtube.com/embed/${trailer.key}?autoplay=1&mute=1&controls=0&loop=1&playlist=${trailer.key}`;
+                        containerMidia.appendChild(iframeCriado);
+                    }
+                } catch (erro) {
+                    console.error("Erro ao carregar trailer:", erro);
+                }
+            }
+            
+            // Faz a transição suave da imagem para o vídeo
+            if (iframeCriado) {
+                imagem.style.opacity = '0';
+                iframeCriado.style.opacity = '1';
+            }
+        }, 1500);
+    });
+
+    cartao.addEventListener('mouseleave', () => {
+        // Se tirou o mouse, cancela o cronômetro imediatamente
+        clearTimeout(temporizador);
+        
+        // Volta para a imagem do pôster
+        if (iframeCriado) {
+            iframeCriado.style.opacity = '0';
+            imagem.style.opacity = '1';
+        }
+    });
+}
 // Inicializa carregando os salvos ao abrir a página
 carregarListaDoServidor();
