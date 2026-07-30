@@ -296,3 +296,54 @@ header p {
     margin-bottom: 10px; 
     font-size: 1.8rem; 
 }
+/* --- RODAPÉ (PORTFÓLIO) --- */
+.rodape-portfolio {
+    margin-top: 60px;
+    padding: 40px 20px;
+    border-top: 1px solid #2d2d2d;
+    text-align: center;
+    color: #9ca3af;
+    background-color: #121212; /* Mantém a imersão do tema escuro */
+}
+
+.rodape-portfolio p {
+    font-size: 1rem;
+    margin-bottom: 15px;
+}
+
+.rodape-portfolio strong {
+    color: #f5c518; /* Destaca o seu nome no amarelo do IMDb */
+}
+
+.links-sociais {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.link-social {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #d1d5db;
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 600;
+    padding: 8px 16px;
+    border-radius: 20px;
+    background: #1f1f1f;
+    border: 1px solid #374151;
+    transition: all 0.3s ease;
+}
+
+.link-social:hover {
+    background: #f5c518;
+    color: #121212;
+    border-color: #f5c518;
+    transform: translateY(-2px);
+}
+
+.link-social:hover svg {
+    fill: #121212;
+}
