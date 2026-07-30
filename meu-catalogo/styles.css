@@ -188,3 +188,61 @@ header p {
 .btn-remover:hover {
     background-color: #ef4444; /* Fica vermelho ao passar o mouse */
 }
+
+/* --- MODAL DE DETALHES EXPANDIDOS --- */
+.modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+    background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(5px);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 2000; opacity: 0; transition: opacity 0.3s ease;
+}
+
+.modal-overlay.ativo {
+    opacity: 1;
+}
+
+.modal-conteudo {
+    background: #121212;
+    width: 90%; max-width: 700px; max-height: 90vh;
+    border-radius: 12px; border: 1px solid #374151;
+    position: relative; overflow-y: auto;
+    transform: scale(0.95); transition: transform 0.3s ease;
+    box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+}
+
+.modal-overlay.ativo .modal-conteudo {
+    transform: scale(1);
+}
+
+.btn-fechar {
+    position: absolute; top: 15px; right: 20px;
+    background: rgba(0,0,0,0.6); border: none; border-radius: 50%;
+    color: #fff; width: 36px; height: 36px;
+    font-size: 1.5rem; cursor: pointer; z-index: 10;
+    display: flex; align-items: center; justify-content: center;
+}
+.btn-fechar:hover { background: #f5c518; color: #121212; }
+
+/* Cabeçalho com Degradê e Infos */
+.modal-header-img {
+    width: 100%; height: 250px; object-fit: cover;
+    mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
+}
+.modal-info { padding: 0 30px 30px 30px; margin-top: -50px; position: relative; z-index: 2; }
+.modal-info h2 { font-size: 2rem; margin-bottom: 10px; color: #ffffff; }
+
+.modal-tags { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
+.modal-tags span { background: #1f1f1f; border: 1px solid #374151; padding: 5px 12px; border-radius: 16px; font-size: 0.8rem; color: #f5c518; font-weight: bold; }
+
+.modal-sinopse { color: #d1d5db; line-height: 1.6; font-size: 0.95rem; margin-bottom: 25px; }
+
+/* Grade de Atores */
+.elenco-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 15px; }
+.ator-card { text-align: center; }
+.ator-card img { width: 100%; height: 110px; object-fit: cover; border-radius: 8px; margin-bottom: 5px; border: 1px solid #2d2d2d; }
+.ator-nome { color: #fff; font-size: 0.75rem; font-weight: bold; display: block; }
+.ator-papel { color: #9ca3af; font-size: 0.7rem; }
+
+/* Transforma o cursor na imagem do filme em uma "mãozinha" indicando clique */
+.midia-container { cursor: pointer; }
