@@ -55,7 +55,7 @@ inputFilme.addEventListener('input', async function() {
                         ano: ano,
                         sinopse: filme.overview || 'Sinopse não disponível em português.',
                         poster: filme.poster_path ? `https://image.tmdb.org/t/p/w500${filme.poster_path}` : null,
-                        tmdbId: filme.id // Adicionando ID no banco de dados!
+                        tmdbId: filme.id
                     });
                 });
                 listaSugestoes.appendChild(item);
@@ -87,15 +87,15 @@ function adicionarFilmeNaTela(dadosFilme) {
     const novoCartao = document.createElement('div');
     novoCartao.classList.add('cartao-filme');
     
-    const imagemPoster = dadosFilme.poster ? `<img src="${dadosFilme.poster}">` : `<div style="height: 300px; background: #2d2d2d;"></div>`;
+    const imagemPoster = dadosFilme.poster ? `<img src="${dadosFilme.poster}" style="cursor: pointer;">` : `<div style="height: 300px; background: #2d2d2d; cursor: pointer;"></div>`;
     const corFavorito = dadosFilme.favorito ? '#ef4444' : '#9ca3af';
 
     novoCartao.innerHTML = `
-        <div class="midia-container">
+        <div class="midia-container" style="cursor: pointer;">
             ${imagemPoster}
         </div>
         <div style="display: flex; justify-content: space-between; align-items: center;">
-            <h2>${dadosFilme.titulo}</h2>
+            <h2 style="cursor: pointer;" class="titulo-clicavel">${dadosFilme.titulo}</h2>
             <button class="btn-favorito" style="background: none; border: none; font-size: 1.3rem; cursor: pointer; color: ${corFavorito};">❤️</button>
         </div>
         <span class="ano">${dadosFilme.ano}</span>
@@ -105,23 +105,29 @@ function adicionarFilmeNaTela(dadosFilme) {
 
     // Ações dos botões (Favorito / Remover)
     const btnFavorito = novoCartao.querySelector('.btn-favorito');
-    btnFavorito.addEventListener('click', async () => {
+    btnFavorito.addEventListener('click', async (e) => {
+        e.stopPropagation();
         const novoStatus = !dadosFilme.favorito;
         await fetch(`https://api-meu-catalogo.onrender.com/filmes/${dadosFilme._id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ favorito: novoStatus }) });
         dadosFilme.favorito = novoStatus; btnFavorito.style.color = novoStatus ? '#ef4444' : '#9ca3af';
     });
 
     const btnRemover = novoCartao.querySelector('.btn-remover');
-    btnRemover.addEventListener('click', async () => {
+    btnRemover.addEventListener('click', async (e) => {
+        e.stopPropagation();
         await fetch(`https://api-meu-catalogo.onrender.com/filmes/${dadosFilme._id}`, { method: 'DELETE' });
         novoCartao.remove();
     });
 
-    // 🚀 LÓGICA DO CLIQUE PARA ABRIR MODAL
+    // Clique no Pôster ou no Título para abrir o Modal
     const midiaContainer = novoCartao.querySelector('.midia-container');
-    midiaContainer.addEventListener('click', () => abrirModalDetalhes(dadosFilme.tmdbId, dadosFilme.titulo));
-    aplicarEfeitoTrailer(novoCartao, dadosFilme.tmdbId);
+    const tituloClicavel = novoCartao.querySelector('.titulo-clicavel');
+    
+    const acaoAbrirModal = () => abrirModalDetalhes(dadosFilme.tmdbId, dadosFilme.titulo);
+    midiaContainer.addEventListener('click', acaoAbrirModal);
+    tituloClicavel.addEventListener('click', acaoAbrirModal);
 
+    aplicarEfeitoTrailer(novoCartao, dadosFilme.tmdbId);
     gridCatalogo.appendChild(novoCartao);
 }
 
@@ -130,13 +136,13 @@ function adicionarFilmeExploracaoNaTela(dadosFilme) {
     const novoCartao = document.createElement('div');
     novoCartao.classList.add('cartao-filme');
     
-    const imagemPoster = dadosFilme.poster ? `<img src="${dadosFilme.poster}">` : `<div style="height: 300px; background: #2d2d2d;"></div>`;
+    const imagemPoster = dadosFilme.poster ? `<img src="${dadosFilme.poster}" style="cursor: pointer;">` : `<div style="height: 300px; background: #2d2d2d; cursor: pointer;"></div>`;
 
     novoCartao.innerHTML = `
-        <div class="midia-container">
+        <div class="midia-container" style="cursor: pointer;">
             ${imagemPoster}
         </div>
-        <h2>${dadosFilme.titulo}</h2>
+        <h2 style="cursor: pointer;" class="titulo-clicavel">${dadosFilme.titulo}</h2>
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
             <span class="ano">${dadosFilme.ano}</span>
             <span style="color: #f5c518; font-weight: bold; font-size: 0.85rem;">⭐ ${dadosFilme.nota}</span>
@@ -144,11 +150,15 @@ function adicionarFilmeExploracaoNaTela(dadosFilme) {
         <p>${dadosFilme.sinopse}</p>
     `;
 
-    // 🚀 LÓGICA DO CLIQUE PARA ABRIR MODAL
+    // Clique no Pôster ou no Título para abrir o Modal
     const midiaContainer = novoCartao.querySelector('.midia-container');
-    midiaContainer.addEventListener('click', () => abrirModalDetalhes(dadosFilme.tmdbId, dadosFilme.titulo));
-    aplicarEfeitoTrailer(novoCartao, dadosFilme.tmdbId);
+    const tituloClicavel = novoCartao.querySelector('.titulo-clicavel');
+    
+    const acaoAbrirModal = () => abrirModalDetalhes(dadosFilme.tmdbId, dadosFilme.titulo);
+    midiaContainer.addEventListener('click', acaoAbrirModal);
+    tituloClicavel.addEventListener('click', acaoAbrirModal);
 
+    aplicarEfeitoTrailer(novoCartao, dadosFilme.tmdbId);
     gridCatalogo.appendChild(novoCartao);
 }
 
@@ -175,7 +185,8 @@ async function carregarTop10Semanal() {
 
 function processarExibicaoExterna(filme) {
     adicionarFilmeExploracaoNaTela({
-        titulo: filme.title, ano: filme.release_date ? filme.release_date.substring(0, 4) : 'N/A',
+        titulo: filme.title, 
+        ano: filme.release_date ? filme.release_date.substring(0, 4) : 'N/A',
         sinopse: filme.overview || 'Sinopse não disponível.',
         poster: filme.poster_path ? `https://image.tmdb.org/t/p/w500${filme.poster_path}` : null,
         nota: filme.vote_average ? filme.vote_average.toFixed(1) : 'N/A',
@@ -190,7 +201,13 @@ btnAdicionar.addEventListener('click', async function() {
         const dados = await resposta.json();
         if (dados.results && dados.results.length > 0) {
             const f = dados.results[0];
-            await adicionarFilmeSelecionado({ titulo: f.title, ano: f.release_date ? f.release_date.substring(0, 4) : '', sinopse: f.overview, poster: f.poster_path ? `https://image.tmdb.org/t/p/w500${f.poster_path}` : null, tmdbId: f.id });
+            await adicionarFilmeSelecionado({ 
+                titulo: f.title, 
+                ano: f.release_date ? f.release_date.substring(0, 4) : '', 
+                sinopse: f.overview, 
+                poster: f.poster_path ? `https://image.tmdb.org/t/p/w500${f.poster_path}` : null, 
+                tmdbId: f.id 
+            });
         }
     }
 });
@@ -225,25 +242,39 @@ if (btnVoltar) {
 
 // --- 11. TRAILER PREMIUM --- //
 function aplicarEfeitoTrailer(cartao, tmdbId) {
-    let temp; const container = cartao.querySelector('.midia-container');
-    const imagem = container.querySelector('img'); let iframe = container.querySelector('iframe');
+    let temp; 
+    const container = cartao.querySelector('.midia-container');
+    const imagem = container.querySelector('img'); 
+    let iframe = container.querySelector('iframe');
+
     cartao.addEventListener('mouseenter', () => {
         temp = setTimeout(async () => {
             if (!iframe && tmdbId) {
                 const url = `https://api.themoviedb.org/3/movie/${tmdbId}/videos?api_key=${API_KEY}&language=pt-BR`;
-                const trailer = (await (await fetch(url)).json()).results.find(v => v.site === 'YouTube' && v.type === 'Trailer');
+                const resposta = await fetch(url);
+                const dados = await resposta.json();
+                const trailer = dados.results ? dados.results.find(v => v.site === 'YouTube' && v.type === 'Trailer') : null;
+                
                 if (trailer) {
                     iframe = document.createElement('iframe');
                     iframe.src = `https://www.youtube.com/embed/${trailer.key}?autoplay=1&mute=1&controls=0&loop=1&playlist=${trailer.key}`;
+                    iframe.style.pointerEvents = 'none'; // Impede o iframe de bloquear o clique do usuário!
                     container.appendChild(iframe);
                 }
             }
-            if (iframe) { imagem.style.opacity = '0'; iframe.style.opacity = '1'; }
+            if (iframe && imagem) { 
+                imagem.style.opacity = '0'; 
+                iframe.style.opacity = '1'; 
+            }
         }, 1500);
     });
+
     cartao.addEventListener('mouseleave', () => {
         clearTimeout(temp);
-        if (iframe) { iframe.style.opacity = '0'; imagem.style.opacity = '1'; }
+        if (iframe && imagem) { 
+            iframe.style.opacity = '0'; 
+            imagem.style.opacity = '1'; 
+        }
     });
 }
 
@@ -252,52 +283,55 @@ const modalOverlay = document.getElementById('modal-detalhes');
 const modalCorpo = document.getElementById('modal-corpo');
 const btnFecharModal = document.getElementById('btn-fechar-modal');
 
-// Fecha o modal ao clicar no X ou fora da caixa
-btnFecharModal.addEventListener('click', fecharModal);
-modalOverlay.addEventListener('click', (e) => { if(e.target === modalOverlay) fecharModal(); });
+if (btnFecharModal && modalOverlay) {
+    btnFecharModal.addEventListener('click', fecharModal);
+    modalOverlay.addEventListener('click', (e) => { if(e.target === modalOverlay) fecharModal(); });
+}
 
 function fecharModal() {
-    modalOverlay.classList.remove('ativo');
-    setTimeout(() => { modalOverlay.style.display = 'none'; }, 300);
+    if (modalOverlay) {
+        modalOverlay.classList.remove('ativo');
+        setTimeout(() => { modalOverlay.style.display = 'none'; }, 300);
+    }
 }
 
 // Abre e constrói o modal do zero buscando na API
 async function abrirModalDetalhes(tmdbId, tituloPesquisa) {
+    if (!modalOverlay || !modalCorpo) {
+        console.error("Elementos do modal não foram encontrados no HTML.");
+        return;
+    }
+
     modalOverlay.style.display = 'flex';
     setTimeout(() => modalOverlay.classList.add('ativo'), 10);
     modalCorpo.innerHTML = '<p style="text-align: center; padding: 50px; color: #f5c518; font-weight: bold;">Montando informações...</p>';
 
     try {
         let id = tmdbId;
-        // Truque Mágico: Se o filme é antigo no BD e não tem ID, pesquisa pelo título na hora!
         if (!id && tituloPesquisa) {
             const busca = await (await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&language=pt-BR&query=${encodeURIComponent(tituloPesquisa)}`)).json();
             if (busca.results && busca.results.length > 0) id = busca.results[0].id;
         }
         if (!id) throw new Error("ID não encontrado");
 
-        // Busca Detalhes Principais e Elenco
         const resDetalhes = await fetch(`https://api.themoviedb.org/3/movie/${id}?api_key=${API_KEY}&language=pt-BR`);
         const resCreditos = await fetch(`https://api.themoviedb.org/3/movie/${id}/credits?api_key=${API_KEY}&language=pt-BR`);
         const detalhes = await resDetalhes.json();
         const creditos = await resCreditos.json();
 
-        // Extrai os dados
         const imgFundo = detalhes.backdrop_path ? `https://image.tmdb.org/t/p/w780${detalhes.backdrop_path}` : '';
         const duracao = detalhes.runtime ? `${detalhes.runtime} min` : 'Duração indisponível';
         const generos = detalhes.genres ? detalhes.genres.map(g => g.name).join('</span><span>') : 'Desconhecido';
         const diretor = creditos.crew ? creditos.crew.find(c => c.job === 'Director') : null;
         const nomeDiretor = diretor ? diretor.name : 'Desconhecido';
-        const elenco = creditos.cast ? creditos.cast.slice(0, 6) : []; // Pega os 6 principais
+        const elenco = creditos.cast ? creditos.cast.slice(0, 6) : [];
 
-        // Monta os quadradinhos dos atores
         let htmlElenco = '';
         elenco.forEach(ator => {
             const foto = ator.profile_path ? `https://image.tmdb.org/t/p/w185${ator.profile_path}` : 'https://via.placeholder.com/150x225/2d2d2d/ffffff?text=Sem+Foto';
             htmlElenco += `<div class="ator-card"><img src="${foto}"><span class="ator-nome">${ator.name}</span><span class="ator-papel">${ator.character}</span></div>`;
         });
 
-        // Injeta tudo na tela
         modalCorpo.innerHTML = `
             ${imgFundo ? `<img src="${imgFundo}" class="modal-header-img">` : ''}
             <div class="modal-info">
