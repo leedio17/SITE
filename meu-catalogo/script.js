@@ -8,6 +8,32 @@ const btnVoltar = document.getElementById('btn-voltar');
 // SUA CHAVE DE API DO TMDB
 const API_KEY = '8bc7947d8c4434f647948194c998adbf'; 
 
+// --- SISTEMA DE NOTIFICAÇÕES TOAST --- //
+function mostrarToast(mensagem, tipo = 'sucesso') {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${tipo}`;
+    
+    // Escolhe o ícone baseado no tipo
+    let icone = '✅';
+    if (tipo === 'erro') icone = '❌';
+    if (tipo === 'info') icone = 'ℹ️';
+
+    toast.innerHTML = `<span>${icone}</span> <span>${mensagem}</span>`;
+    container.appendChild(toast);
+
+    // Animação de entrada
+    setTimeout(() => toast.classList.add('mostrar'), 10);
+
+    // Remove automaticamente após 3 segundos
+    setTimeout(() => {
+        toast.classList.remove('mostrar');
+        setTimeout(() => toast.remove(), 400); // Aguarda a animação de saída terminar
+    }, 3000);
+}
+
 // --- CRIAÇÃO DINÂMICA DA CAIXA DE SUGESTÕES (AUTOCOMPLETE) --- //
 const containerInput = inputFilme.parentNode;
 containerInput.style.position = 'relative'; 
