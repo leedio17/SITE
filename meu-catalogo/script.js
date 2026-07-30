@@ -26,32 +26,22 @@ listaSugestoes.style.maxHeight = '200px';
 listaSugestoes.style.overflowY = 'auto';
 containerInput.appendChild(listaSugestoes);
 
-// --- 1. BUSCAR SUGESTÕES EM TEMPO REAL (AUTOCOMPLETE) --- //
+// --- 1. BUSCAR SUGESTÕES EM TEMPO REAL --- //
 inputFilme.addEventListener('input', async function() {
     const termo = inputFilme.value.trim();
-    
-    if (termo.length < 2) {
-        listaSugestoes.innerHTML = '';
-        return;
-    }
+    if (termo.length < 2) { listaSugestoes.innerHTML = ''; return; }
 
-    const url = `https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&language=pt-BR&query=${encodeURIComponent(termo)}`;
-    
     try {
-        const resposta = await fetch(url);
+        const resposta = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&language=pt-BR&query=${encodeURIComponent(termo)}`);
         const dados = await resposta.json();
-        
         listaSugestoes.innerHTML = '';
         
         if (dados.results && dados.results.length > 0) {
             dados.results.slice(0, 5).forEach(filme => {
                 const item = document.createElement('div');
                 const ano = filme.release_date ? filme.release_date.substring(0, 4) : 'N/A';
-                item.style.padding = '10px 15px';
-                item.style.cursor = 'pointer';
-                item.style.borderBottom = '1px solid #2d2d2d';
-                item.style.color = '#f3f4f6';
-                item.style.fontSize = '0.9rem';
+                item.style.padding = '10px 15px'; item.style.cursor = 'pointer'; item.style.borderBottom = '1px solid #2d2d2d';
+                item.style.color = '#f3f4f6'; item.style.fontSize = '0.9rem';
                 item.innerHTML = `<strong>${filme.title}</strong> (${ano})`;
                 
                 item.addEventListener('mouseenter', () => item.style.background = '#374151');
@@ -64,26 +54,21 @@ inputFilme.addEventListener('input', async function() {
                         titulo: filme.title,
                         ano: ano,
                         sinopse: filme.overview || 'Sinopse não disponível em português.',
-                        poster: filme.poster_path ? `https://image.tmdb.org/t/p/w500${filme.poster_path}` : null
+                        poster: filme.poster_path ? `https://image.tmdb.org/t/p/w500${filme.poster_path}` : null,
+                        tmdbId: filme.id // Adicionando ID no banco de dados!
                     });
                 });
-                
                 listaSugestoes.appendChild(item);
             });
         }
-    } catch (erro) {
-        console.error('Erro ao buscar sugestões:', erro);
-    }
+    } catch (erro) { console.error('Erro sugestões:', erro); }
 });
 
-// Fecha as sugestões se clicar fora
 document.addEventListener('click', (e) => {
-    if (!containerInput.contains(e.target)) {
-        listaSugestoes.innerHTML = '';
-    }
+    if (!containerInput.contains(e.target)) listaSugestoes.innerHTML = '';
 });
 
-// --- 2. FUNÇÃO AUXILIAR PARA SALVAR O FILME ESCOLHIDO (POST) --- //
+// --- 2. SALVAR FILME (POST) --- //
 async function adicionarFilmeSelecionado(dadosFilme) {
     try {
         const resposta = await fetch('https://api-meu-catalogo.onrender.com/filmes', {
@@ -91,28 +76,24 @@ async function adicionarFilmeSelecionado(dadosFilme) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(dadosFilme)
         });
-        
         const filmeSalvoNoBanco = await resposta.json();
         adicionarFilmeNaTela(filmeSalvoNoBanco);
-    } catch (erro) {
-        console.error("Erro ao salvar no back-end:", erro);
-    }
+    } catch (erro) { console.error("Erro ao salvar:", erro); }
     inputFilme.value = '';
 }
 
-// --- 3. FUNÇÃO QUE CRIA O VISUAL NA TELA (MEUS SALVOS) --- //
+// --- 3. VISUAL: MEUS SALVOS --- //
 function adicionarFilmeNaTela(dadosFilme) {
     const novoCartao = document.createElement('div');
     novoCartao.classList.add('cartao-filme');
     
-    const imagemPoster = dadosFilme.poster 
-        ? `<img src="${dadosFilme.poster}" alt="Pôster de ${dadosFilme.titulo}">`
-        : `<div class="poster-placeholder" style="height: 320px; background: #2d2d2d; display: flex; align-items: center; justify-content: center; color: #9ca3af; margin-bottom: 12px; border-radius: 4px;">Sem Pôster</div>`;
-
+    const imagemPoster = dadosFilme.poster ? `<img src="${dadosFilme.poster}">` : `<div style="height: 300px; background: #2d2d2d;"></div>`;
     const corFavorito = dadosFilme.favorito ? '#ef4444' : '#9ca3af';
 
     novoCartao.innerHTML = `
-        ${imagemPoster}
+        <div class="midia-container">
+            ${imagemPoster}
+        </div>
         <div style="display: flex; justify-content: space-between; align-items: center;">
             <h2>${dadosFilme.titulo}</h2>
             <button class="btn-favorito" style="background: none; border: none; font-size: 1.3rem; cursor: pointer; color: ${corFavorito};">❤️</button>
@@ -122,50 +103,34 @@ function adicionarFilmeNaTela(dadosFilme) {
         <button class="btn-remover">Remover</button>
     `;
 
-    // Ação do Botão de Favorito (PATCH)
+    // Ações dos botões (Favorito / Remover)
     const btnFavorito = novoCartao.querySelector('.btn-favorito');
-    btnFavorito.addEventListener('click', async function() {
-        try {
-            const novoStatus = !dadosFilme.favorito;
-            const resposta = await fetch(`https://api-meu-catalogo.onrender.com/filmes/${dadosFilme._id}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ favorito: novoStatus })
-            });
-            
-            if (resposta.ok) {
-                dadosFilme.favorito = novoStatus;
-                btnFavorito.style.color = novoStatus ? '#ef4444' : '#9ca3af';
-            }
-        } catch (erro) {
-            console.error("Erro ao atualizar favorito:", erro);
-        }
+    btnFavorito.addEventListener('click', async () => {
+        const novoStatus = !dadosFilme.favorito;
+        await fetch(`https://api-meu-catalogo.onrender.com/filmes/${dadosFilme._id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ favorito: novoStatus }) });
+        dadosFilme.favorito = novoStatus; btnFavorito.style.color = novoStatus ? '#ef4444' : '#9ca3af';
     });
 
-    // Ação do Botão de Remover (DELETE)
     const btnRemover = novoCartao.querySelector('.btn-remover');
-    btnRemover.addEventListener('click', async function() {
-        try {
-            await fetch(`https://api-meu-catalogo.onrender.com/filmes/${dadosFilme._id}`, {
-                method: 'DELETE'
-            });
-            novoCartao.remove();
-        } catch (erro) {
-            console.error("Erro ao excluir o filme:", erro);
-        }
+    btnRemover.addEventListener('click', async () => {
+        await fetch(`https://api-meu-catalogo.onrender.com/filmes/${dadosFilme._id}`, { method: 'DELETE' });
+        novoCartao.remove();
     });
+
+    // 🚀 LÓGICA DO CLIQUE PARA ABRIR MODAL
+    const midiaContainer = novoCartao.querySelector('.midia-container');
+    midiaContainer.addEventListener('click', () => abrirModalDetalhes(dadosFilme.tmdbId, dadosFilme.titulo));
+    aplicarEfeitoTrailer(novoCartao, dadosFilme.tmdbId);
 
     gridCatalogo.appendChild(novoCartao);
 }
 
-// --- FUNÇÃO VISUAL PARA OS FILMES DE EXPLORAÇÃO E RECOMENDAÇÃO --- //
+// --- 4. VISUAL: EXPLORAÇÃO (TOP 20, RECOMENDAÇÃO, TRENDING) --- //
 function adicionarFilmeExploracaoNaTela(dadosFilme) {
     const novoCartao = document.createElement('div');
     novoCartao.classList.add('cartao-filme');
     
-    const imagemPoster = dadosFilme.poster 
-        ? `<img src="${dadosFilme.poster}" alt="Pôster de ${dadosFilme.titulo}">`
-        : `<div class="poster-placeholder" style="height: 300px; background: #2d2d2d; display: flex; align-items: center; justify-content: center; color: #9ca3af; border-radius: 4px;">Sem Pôster</div>`;
+    const imagemPoster = dadosFilme.poster ? `<img src="${dadosFilme.poster}">` : `<div style="height: 300px; background: #2d2d2d;"></div>`;
 
     novoCartao.innerHTML = `
         <div class="midia-container">
@@ -177,275 +142,182 @@ function adicionarFilmeExploracaoNaTela(dadosFilme) {
             <span style="color: #f5c518; font-weight: bold; font-size: 0.85rem;">⭐ ${dadosFilme.nota}</span>
         </div>
         <p>${dadosFilme.sinopse}</p>
-        <span style="font-size: 0.75rem; color: #9ca3af; text-align: center; display: block; padding: 4px;">Modo Exploração</span>
     `;
 
-    // 🚀 ATIVANDO O EFEITO PREMIUM: Passa o cartão e o ID do filme na API
+    // 🚀 LÓGICA DO CLIQUE PARA ABRIR MODAL
+    const midiaContainer = novoCartao.querySelector('.midia-container');
+    midiaContainer.addEventListener('click', () => abrirModalDetalhes(dadosFilme.tmdbId, dadosFilme.titulo));
     aplicarEfeitoTrailer(novoCartao, dadosFilme.tmdbId);
 
     gridCatalogo.appendChild(novoCartao);
 }
-// --- 5. BUSCA DE TOP 20 POR CATEGORIA --- //
+
+// --- 5, 6 E 7. FUNÇÕES DE BUSCA DA API --- //
 async function carregarTop20PorCategoria(genreId) {
     const url = `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&language=pt-BR&sort_by=vote_average.desc&vote_count.gte=1000&with_genres=${genreId}`;
-    
-    try {
-        const resposta = await fetch(url);
-        const dados = await resposta.json();
-        
-        if (dados.results && dados.results.length > 0) {
-            dados.results.slice(0, 20).forEach(filme => {
-                const dadosFilme = {
-    titulo: filme.title,
-    ano: filme.release_date ? filme.release_date.substring(0, 4) : 'N/A',
-    sinopse: filme.overview || 'Sinopse não disponível.',
-    poster: filme.poster_path ? `https://image.tmdb.org/t/p/w500${filme.poster_path}` : null,
-    nota: filme.vote_average ? filme.vote_average.toFixed(1) : 'N/A',
-    tmdbId: filme.id // <-- ADICIONE ESTA LINHA NAS DUAS FUNÇÕES!
-};
-                adicionarFilmeExploracaoNaTela(dadosFilme);
-            });
-        }
-    } catch (erro) {
-        console.error('Erro ao carregar top 20 da categoria:', erro);
-    }
+    const dados = await (await fetch(url)).json();
+    dados.results.slice(0, 20).forEach(filme => processarExibicaoExterna(filme));
 }
 
-// --- 6. FUNÇÃO EXCLUSIVA PARA RECOMENDAÇÕES (5 FILMES ALEATÓRIOS E BONS) --- //
 async function carregarRecomendacoes() {
-    // Sorteia uma página de 1 a 15 para trazer resultados diferentes a cada clique
-    const paginaAleatoria = Math.floor(Math.random() * 15) + 1;
-    
-    // Filtros: Filmes recentes (2022+), nota maior que 7.0, e um número bom de votos (mínimo 500)
-    const url = `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&language=pt-BR&sort_by=popularity.desc&primary_release_date.gte=2022-01-01&vote_average.gte=7.0&vote_count.gte=500&page=${paginaAleatoria}`;
-    
-    try {
-        const resposta = await fetch(url);
-        const dados = await resposta.json();
-        
-        if (dados.results && dados.results.length > 0) {
-            // O TMDB devolve 20 filmes por página. Vamos embaralhar essa lista...
-            const filmesEmbaralhados = dados.results.sort(() => 0.5 - Math.random());
-            
-            // ...e cortar apenas os 5 primeiros!
-            const cincoRecomendacoes = filmesEmbaralhados.slice(0, 10);
-            
-            cincoRecomendacoes.forEach(filme => {
-                const dadosFilme = {
-    titulo: filme.title,
-    ano: filme.release_date ? filme.release_date.substring(0, 4) : 'N/A',
-    sinopse: filme.overview || 'Sinopse não disponível.',
-    poster: filme.poster_path ? `https://image.tmdb.org/t/p/w500${filme.poster_path}` : null,
-    nota: filme.vote_average ? filme.vote_average.toFixed(1) : 'N/A',
-    tmdbId: filme.id // <-- ADICIONE ESTA LINHA NAS DUAS FUNÇÕES!
-};
-                
-                // Reaproveitamos a função visual do "Modo Exploração" para exibi-los
-                adicionarFilmeExploracaoNaTela(dadosFilme);
-            });
-        }
-    } catch (erro) {
-        console.error('Erro ao carregar recomendações:', erro);
-    }
+    const pagina = Math.floor(Math.random() * 15) + 1;
+    const url = `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&language=pt-BR&sort_by=popularity.desc&primary_release_date.gte=2022-01-01&vote_average.gte=7.0&vote_count.gte=500&page=${pagina}`;
+    const dados = await (await fetch(url)).json();
+    const misturados = dados.results.sort(() => 0.5 - Math.random());
+    misturados.slice(0, 5).forEach(filme => processarExibicaoExterna(filme));
 }
 
-// --- 7. EVENTO DO BOTÃO ADICIONAR (Busca e Salva direto) --- //
+async function carregarTop10Semanal() {
+    const url = `https://api.themoviedb.org/3/trending/movie/week?api_key=${API_KEY}&language=pt-BR`;
+    const dados = await (await fetch(url)).json();
+    dados.results.slice(0, 10).forEach(filme => processarExibicaoExterna(filme));
+}
+
+function processarExibicaoExterna(filme) {
+    adicionarFilmeExploracaoNaTela({
+        titulo: filme.title, ano: filme.release_date ? filme.release_date.substring(0, 4) : 'N/A',
+        sinopse: filme.overview || 'Sinopse não disponível.',
+        poster: filme.poster_path ? `https://image.tmdb.org/t/p/w500${filme.poster_path}` : null,
+        nota: filme.vote_average ? filme.vote_average.toFixed(1) : 'N/A',
+        tmdbId: filme.id
+    });
+}
+
+// --- 8. BOTÃO ADICIONAR MANUALMENTE --- //
 btnAdicionar.addEventListener('click', async function() {
-    const nomeDoFilme = inputFilme.value; 
-    
-    if (nomeDoFilme.trim() !== '') {
-        btnAdicionar.innerText = 'Buscando...'; 
-        btnAdicionar.disabled = true; 
-
-        const url = `https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&language=pt-BR&query=${encodeURIComponent(nomeDoFilme)}`;
-        
-        try {
-            const resposta = await fetch(url);
-            const dados = await resposta.json();
-            
-            if (dados.results && dados.results.length > 0) {
-                const filme = dados.results[0];
-                await adicionarFilmeSelecionado({
-                    titulo: filme.title,
-                    ano: filme.release_date ? filme.release_date.substring(0, 4) : 'Ano desconhecido',
-                    sinopse: filme.overview || 'Sinopse não disponível em português.',
-                    poster: filme.poster_path ? `https://image.tmdb.org/t/p/w500${filme.poster_path}` : null
-                });
-            } else {
-                alert('Filme não encontrado!');
-            }
-        } catch (erro) {
-            console.error('Erro ao buscar o filme:', erro);
+    if (inputFilme.value.trim() !== '') {
+        const resposta = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&language=pt-BR&query=${encodeURIComponent(inputFilme.value)}`);
+        const dados = await resposta.json();
+        if (dados.results && dados.results.length > 0) {
+            const f = dados.results[0];
+            await adicionarFilmeSelecionado({ titulo: f.title, ano: f.release_date ? f.release_date.substring(0, 4) : '', sinopse: f.overview, poster: f.poster_path ? `https://image.tmdb.org/t/p/w500${f.poster_path}` : null, tmdbId: f.id });
         }
-
-        btnAdicionar.innerText = 'Adicionar à Lista';
-        btnAdicionar.disabled = false;
-        listaSugestoes.innerHTML = '';
     }
 });
 
-// --- 8. CARREGAR DO BACK-END --- //
+// --- 9. CARREGAR DO SERVIDOR --- //
 async function carregarListaDoServidor() {
-    try {
-        const resposta = await fetch('https://api-meu-catalogo.onrender.com/filmes');
-        const filmesSalvos = await resposta.json();
-        
-        if (Array.isArray(filmesSalvos)) {
-            filmesSalvos.forEach(function(filme) {
-                adicionarFilmeNaTela(filme);
-            });
-        }
-    } catch (erro) {
-        console.error('Erro ao conectar com o servidor:', erro);
-    }
+    const filmesSalvos = await (await fetch('https://api-meu-catalogo.onrender.com/filmes')).json();
+    if (Array.isArray(filmesSalvos)) filmesSalvos.forEach(filme => adicionarFilmeNaTela(filme));
 }
 
-// --- 9. GERENCIAMENTO DE CATEGORIAS E BOTÃO DE VOLTAR --- //
+// --- 10. BOTÕES DE CATEGORIA --- //
 const botoesCategoria = document.querySelectorAll('.btn-categoria');
-
 botoesCategoria.forEach(botao => {
     botao.addEventListener('click', async function() {
-        // Atualiza o visual dos botões de categoria
-        botoesCategoria.forEach(b => {
-            b.style.background = '#1f1f1f';
-            b.style.color = '#f3f4f6';
-            b.style.border = '1px solid #374151';
-        });
+        botoesCategoria.forEach(b => { b.style.background = '#1f1f1f'; b.style.color = '#f3f4f6'; b.style.border = '1px solid #374151'; });
+        this.style.background = '#f5c518'; this.style.color = '#121212'; this.style.border = 'none';
         
-        this.style.background = '#f5c518';
-        this.style.color = '#121212';
-        this.style.border = 'none';
-
         const genreId = this.getAttribute('data-genre');
-        gridCatalogo.innerHTML = ''; // Limpa a tela
+        gridCatalogo.innerHTML = '';
+        painelNavegacao.style.display = genreId === 'all' ? 'none' : 'block';
 
-        if (genreId === 'all') {
-            // Se for "Meus Salvos", esconde o botão de voltar e puxa do banco
-            painelNavegacao.style.display = 'none';
-            carregarListaDoServidor();
-        } else if (genreId === 'recomendacao') {
-            // Se for "Recomendação", mostra o botão de voltar e carrega as sugestões aleatórias
-            painelNavegacao.style.display = 'block';
-            await carregarRecomendacoes();
-        } else if (genreId === 'trending') {
-            // NOVO: Se for "Top 10 Semanal", mostra o botão de voltar e busca os em alta
-            painelNavegacao.style.display = 'block';
-            await carregarTop10Semanal();
-        } else {
-            // Se escolher uma categoria Top 20, mostra o botão de voltar
-            painelNavegacao.style.display = 'block';
-            await carregarTop20PorCategoria(genreId);
-        }
+        if (genreId === 'all') carregarListaDoServidor();
+        else if (genreId === 'recomendacao') await carregarRecomendacoes();
+        else if (genreId === 'trending') await carregarTop10Semanal();
+        else await carregarTop20PorCategoria(genreId);
     });
 });
 
-// Ação do Botão de Retorno
 if (btnVoltar) {
-    btnVoltar.addEventListener('click', function() {
-        // Esconde o painel de navegação
-        painelNavegacao.style.display = 'none';
-        
-        // Reseta o estilo visual dos botões para focar em "Meus Salvos"
-        botoesCategoria.forEach(b => {
-            if (b.getAttribute('data-genre') === 'all') {
-                b.style.background = '#f5c518';
-                b.style.color = '#121212';
-                b.style.border = 'none';
-            } else {
-                b.style.background = '#1f1f1f';
-                b.style.color = '#f3f4f6';
-                b.style.border = '1px solid #374151';
-            }
-        });
-
-        // Limpa a grade e recarrega os filmes salvos do usuário
-        gridCatalogo.innerHTML = '';
-        carregarListaDoServidor();
-    });
+    btnVoltar.addEventListener('click', () => { document.querySelector('[data-genre="all"]').click(); });
 }
 
-// --- EFEITO PREMIUM: TRAILER NO HOVER --- //
+// --- 11. TRAILER PREMIUM --- //
 function aplicarEfeitoTrailer(cartao, tmdbId) {
-    let temporizador;
-    const containerMidia = cartao.querySelector('.midia-container');
-    const imagem = containerMidia.querySelector('img');
-    let iframeCriado = containerMidia.querySelector('iframe');
-
+    let temp; const container = cartao.querySelector('.midia-container');
+    const imagem = container.querySelector('img'); let iframe = container.querySelector('iframe');
     cartao.addEventListener('mouseenter', () => {
-        // Inicia o cronômetro de 1.5 segundos
-        temporizador = setTimeout(async () => {
-            // Se o iframe ainda não foi criado, busca na API
-            if (!iframeCriado && tmdbId) {
-                try {
-                    const url = `https://api.themoviedb.org/3/movie/${tmdbId}/videos?api_key=${API_KEY}&language=pt-BR`;
-                    const resposta = await fetch(url);
-                    const dados = await resposta.json();
-                    
-                    // Procura o trailer oficial no YouTube
-                    const trailer = dados.results.find(vid => vid.site === 'YouTube' && vid.type === 'Trailer');
-                    
-                    if (trailer) {
-                        iframeCriado = document.createElement('iframe');
-                        // Autoplay, mudo, sem controles e em loop
-                        iframeCriado.src = `https://www.youtube.com/embed/${trailer.key}?autoplay=1&mute=1&controls=0&loop=1&playlist=${trailer.key}`;
-                        containerMidia.appendChild(iframeCriado);
-                    }
-                } catch (erro) {
-                    console.error("Erro ao carregar trailer:", erro);
+        temp = setTimeout(async () => {
+            if (!iframe && tmdbId) {
+                const url = `https://api.themoviedb.org/3/movie/${tmdbId}/videos?api_key=${API_KEY}&language=pt-BR`;
+                const trailer = (await (await fetch(url)).json()).results.find(v => v.site === 'YouTube' && v.type === 'Trailer');
+                if (trailer) {
+                    iframe = document.createElement('iframe');
+                    iframe.src = `https://www.youtube.com/embed/${trailer.key}?autoplay=1&mute=1&controls=0&loop=1&playlist=${trailer.key}`;
+                    container.appendChild(iframe);
                 }
             }
-            
-            // Faz a transição suave da imagem para o vídeo
-            if (iframeCriado) {
-                imagem.style.opacity = '0';
-                iframeCriado.style.opacity = '1';
-            }
+            if (iframe) { imagem.style.opacity = '0'; iframe.style.opacity = '1'; }
         }, 1500);
     });
-
     cartao.addEventListener('mouseleave', () => {
-        // Se tirou o mouse, cancela o cronômetro imediatamente
-        clearTimeout(temporizador);
-        
-        // Volta para a imagem do pôster
-        if (iframeCriado) {
-            iframeCriado.style.opacity = '0';
-            imagem.style.opacity = '1';
-        }
+        clearTimeout(temp);
+        if (iframe) { iframe.style.opacity = '0'; imagem.style.opacity = '1'; }
     });
 }
-// --- FUNÇÃO EXCLUSIVA PARA O TOP 10 SEMANAL --- //
-async function carregarTop10Semanal() {
-    // Rota específica do TMDB para filmes em alta (trending) na semana
-    const url = `https://api.themoviedb.org/3/trending/movie/week?api_key=${API_KEY}&language=pt-BR`;
-    
+
+// --- 12. LÓGICA DO NOVO MODAL EXPANDIDO --- //
+const modalOverlay = document.getElementById('modal-detalhes');
+const modalCorpo = document.getElementById('modal-corpo');
+const btnFecharModal = document.getElementById('btn-fechar-modal');
+
+// Fecha o modal ao clicar no X ou fora da caixa
+btnFecharModal.addEventListener('click', fecharModal);
+modalOverlay.addEventListener('click', (e) => { if(e.target === modalOverlay) fecharModal(); });
+
+function fecharModal() {
+    modalOverlay.classList.remove('ativo');
+    setTimeout(() => { modalOverlay.style.display = 'none'; }, 300);
+}
+
+// Abre e constrói o modal do zero buscando na API
+async function abrirModalDetalhes(tmdbId, tituloPesquisa) {
+    modalOverlay.style.display = 'flex';
+    setTimeout(() => modalOverlay.classList.add('ativo'), 10);
+    modalCorpo.innerHTML = '<p style="text-align: center; padding: 50px; color: #f5c518; font-weight: bold;">Montando informações...</p>';
+
     try {
-        const resposta = await fetch(url);
-        const dados = await resposta.json();
-        
-        if (dados.results && dados.results.length > 0) {
-            // Cortamos a lista para pegar exatamente o Top 10
-            const top10 = dados.results.slice(0, 10);
-            
-            top10.forEach(filme => {
-                const dadosFilme = {
-                    titulo: filme.title,
-                    ano: filme.release_date ? filme.release_date.substring(0, 4) : 'N/A',
-                    sinopse: filme.overview || 'Sinopse não disponível.',
-                    poster: filme.poster_path ? `https://image.tmdb.org/t/p/w500${filme.poster_path}` : null,
-                    nota: filme.vote_average ? filme.vote_average.toFixed(1) : 'N/A',
-                    tmdbId: filme.id // Mantém o ID para o efeito do trailer funcionar!
-                };
-                
-                // Aproveita a renderização visual do modo de exploração
-                adicionarFilmeExploracaoNaTela(dadosFilme);
-            });
+        let id = tmdbId;
+        // Truque Mágico: Se o filme é antigo no BD e não tem ID, pesquisa pelo título na hora!
+        if (!id && tituloPesquisa) {
+            const busca = await (await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&language=pt-BR&query=${encodeURIComponent(tituloPesquisa)}`)).json();
+            if (busca.results && busca.results.length > 0) id = busca.results[0].id;
         }
+        if (!id) throw new Error("ID não encontrado");
+
+        // Busca Detalhes Principais e Elenco
+        const resDetalhes = await fetch(`https://api.themoviedb.org/3/movie/${id}?api_key=${API_KEY}&language=pt-BR`);
+        const resCreditos = await fetch(`https://api.themoviedb.org/3/movie/${id}/credits?api_key=${API_KEY}&language=pt-BR`);
+        const detalhes = await resDetalhes.json();
+        const creditos = await resCreditos.json();
+
+        // Extrai os dados
+        const imgFundo = detalhes.backdrop_path ? `https://image.tmdb.org/t/p/w780${detalhes.backdrop_path}` : '';
+        const duracao = detalhes.runtime ? `${detalhes.runtime} min` : 'Duração indisponível';
+        const generos = detalhes.genres ? detalhes.genres.map(g => g.name).join('</span><span>') : 'Desconhecido';
+        const diretor = creditos.crew ? creditos.crew.find(c => c.job === 'Director') : null;
+        const nomeDiretor = diretor ? diretor.name : 'Desconhecido';
+        const elenco = creditos.cast ? creditos.cast.slice(0, 6) : []; // Pega os 6 principais
+
+        // Monta os quadradinhos dos atores
+        let htmlElenco = '';
+        elenco.forEach(ator => {
+            const foto = ator.profile_path ? `https://image.tmdb.org/t/p/w185${ator.profile_path}` : 'https://via.placeholder.com/150x225/2d2d2d/ffffff?text=Sem+Foto';
+            htmlElenco += `<div class="ator-card"><img src="${foto}"><span class="ator-nome">${ator.name}</span><span class="ator-papel">${ator.character}</span></div>`;
+        });
+
+        // Injeta tudo na tela
+        modalCorpo.innerHTML = `
+            ${imgFundo ? `<img src="${imgFundo}" class="modal-header-img">` : ''}
+            <div class="modal-info">
+                <h2>${detalhes.title}</h2>
+                <div class="modal-tags">
+                    <span>⭐ ${detalhes.vote_average ? detalhes.vote_average.toFixed(1) : 'N/A'}</span>
+                    <span>⏱️ ${duracao}</span>
+                    <span>🎬 Dirigido por: ${nomeDiretor}</span>
+                    <span>${generos}</span>
+                </div>
+                <p class="modal-sinopse">${detalhes.overview || 'Sinopse não disponível para este filme.'}</p>
+                <h3 style="color: #fff; margin-bottom: 15px; font-size: 1.1rem; border-bottom: 1px solid #374151; padding-bottom: 5px;">Elenco Principal</h3>
+                <div class="elenco-grid">${htmlElenco}</div>
+            </div>
+        `;
     } catch (erro) {
-        console.error('Erro ao carregar o Top 10 semanal:', erro);
+        console.error("Erro no modal:", erro);
+        modalCorpo.innerHTML = '<p style="text-align: center; padding: 50px; color: #ef4444;">Erro ao carregar as informações.</p>';
     }
 }
-carregarTop10Semanal();
 
-// Inicializa carregando os salvos ao abrir a página
+// Inicia o app
 carregarListaDoServidor();
