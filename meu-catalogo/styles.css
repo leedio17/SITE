@@ -246,3 +246,53 @@ header p {
 
 /* Transforma o cursor na imagem do filme em uma "mãozinha" indicando clique */
 .midia-container { cursor: pointer; }
+
+/* --- ANIMAÇÃO DE CARREGAMENTO (LOADING & EMPTY STATE) --- */
+.loading-container {
+    grid-column: 1 / -1; /* Força o loader a ocupar a fileira inteira da grade */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 20px;
+    text-align: center;
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid #2d2d2d;
+    border-top-color: #f5c518; /* Amarelo IMDb */
+    border-radius: 50%;
+    animation: spinner-girar 1s linear infinite;
+    margin-bottom: 20px;
+}
+
+@keyframes spinner-girar {
+    to { transform: rotate(360deg); }
+}
+
+.loading-texto {
+    color: #f3f4f6;
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin: 0 0 8px 0;
+}
+
+.loading-subtexto {
+    color: #9ca3af;
+    font-size: 0.9rem;
+}
+
+/* Estado Vazio (Quando não tem filmes salvos) */
+.empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 80px 20px;
+    color: #9ca3af;
+}
+.empty-state h2 { 
+    color: #f3f4f6; 
+    margin-bottom: 10px; 
+    font-size: 1.8rem; 
+}
