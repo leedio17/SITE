@@ -26,6 +26,17 @@ listaSugestoes.style.maxHeight = '200px';
 listaSugestoes.style.overflowY = 'auto';
 containerInput.appendChild(listaSugestoes);
 
+// --- FUNÇÃO AUXILIAR DE CARREGAMENTO --- //
+function mostrarCarregamento(mensagem, submensagem = "") {
+    gridCatalogo.innerHTML = `
+        <div class="loading-container">
+            <div class="spinner"></div>
+            <p class="loading-texto">${mensagem}</p>
+            ${submensagem ? `<p class="loading-subtexto">${submensagem}</p>` : ''}
+        </div>
+    `;
+}
+
 // --- 1. BUSCAR SUGESTÕES EM TEMPO REAL --- //
 inputFilme.addEventListener('input', async function() {
     const termo = inputFilme.value.trim();
@@ -77,6 +88,12 @@ async function adicionarFilmeSelecionado(dadosFilme) {
             body: JSON.stringify(dadosFilme)
         });
         const filmeSalvoNoBanco = await resposta.json();
+        
+        // Se for o primeiro filme adicionado (a tela estava vazia), limpa a grade
+        if (gridCatalogo.querySelector('.empty-state')) {
+            gridCatalogo.innerHTML = '';
+        }
+        
         adicionarFilmeNaTela(filmeSalvoNoBanco);
     } catch (erro) { console.error("Erro ao salvar:", erro); }
     inputFilme.value = '';
@@ -117,6 +134,16 @@ function adicionarFilmeNaTela(dadosFilme) {
         e.stopPropagation();
         await fetch(`https://api-meu-catalogo.onrender.com/filmes/${dadosFilme._id}`, { method: 'DELETE' });
         novoCartao.remove();
+        
+        // Verifica se ficou vazio após remover
+        if (gridCatalogo.querySelectorAll('.cartao-filme').length === 0) {
+            gridCatalogo.innerHTML = `
+                <div class="empty-state">
+                    <h2>Sua prateleira está vazia! 🍿</h2>
+                    <p>Busque um filme na barra acima ou explore nossas categorias.</p>
+                </div>
+            `;
+        }
     });
 
     // Clique no Pôster ou no Título para abrir o Modal
@@ -128,7 +155,9 @@ function adicionarFilmeNaTela(dadosFilme) {
     tituloClicavel.addEventListener('click', acaoAbrirModal);
 
     aplicarEfeitoTrailer(novoCartao, dadosFilme.tmdbId);
-    gridCatalogo.appendChild(novoCartao);
+    
+    // Inserir no topo (opcional, mas bom para os novos salvos aparecerem primeiro)
+    gridCatalogo.prepend(novoCartao);
 }
 
 // --- 4. VISUAL: EXPLORAÇÃO (TOP 20, RECOMENDAÇÃO, TRENDING) --- //
@@ -164,22 +193,30 @@ function adicionarFilmeExploracaoNaTela(dadosFilme) {
 
 // --- 5, 6 E 7. FUNÇÕES DE BUSCA DA API --- //
 async function carregarTop20PorCategoria(genreId) {
+    mostrarCarregamento("Explorando o catálogo do TMDB...");
     const url = `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&language=pt-BR&sort_by=vote_average.desc&vote_count.gte=1000&with_genres=${genreId}`;
     const dados = await (await fetch(url)).json();
+    gridCatalogo.innerHTML = ''; 
     dados.results.slice(0, 20).forEach(filme => processarExibicaoExterna(filme));
 }
 
 async function carregarRecomendacoes() {
+    mostrarCarregamento("Separando filmes a dedo para você...");
     const pagina = Math.floor(Math.random() * 15) + 1;
     const url = `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&language=pt-BR&sort_by=popularity.desc&primary_release_date.gte=2022-01-01&vote_average.gte=7.0&vote_count.gte=500&page=${pagina}`;
     const dados = await (await fetch(url)).json();
     const misturados = dados.results.sort(() => 0.5 - Math.random());
-    misturados.slice(0, 5).forEach(filme => processarExibicaoExterna(filme));
+    gridCatalogo.innerHTML = ''; 
+    
+    // 🔥 AGORA EXIBINDO 10 RECOMENDAÇÕES 🔥
+    misturados.slice(0, 10).forEach(filme => processarExibicaoExterna(filme));
 }
 
 async function carregarTop10Semanal() {
+    mostrarCarregamento("Buscando as tendências mundiais desta semana...");
     const url = `https://api.themoviedb.org/3/trending/movie/week?api_key=${API_KEY}&language=pt-BR`;
     const dados = await (await fetch(url)).json();
+    gridCatalogo.innerHTML = ''; 
     dados.results.slice(0, 10).forEach(filme => processarExibicaoExterna(filme));
 }
 
@@ -214,8 +251,35 @@ btnAdicionar.addEventListener('click', async function() {
 
 // --- 9. CARREGAR DO SERVIDOR --- //
 async function carregarListaDoServidor() {
-    const filmesSalvos = await (await fetch('https://api-meu-catalogo.onrender.com/filmes')).json();
-    if (Array.isArray(filmesSalvos)) filmesSalvos.forEach(filme => adicionarFilmeNaTela(filme));
+    mostrarCarregamento(
+        "Conectando ao banco de dados...", 
+        "Como usamos um servidor gratuito, isso pode levar até 50 segundos na primeira vez. ☕"
+    );
+    
+    try {
+        const resposta = await fetch('https://api-meu-catalogo.onrender.com/filmes');
+        const filmesSalvos = await resposta.json();
+        gridCatalogo.innerHTML = ''; 
+        
+        if (Array.isArray(filmesSalvos) && filmesSalvos.length > 0) {
+            filmesSalvos.forEach(filme => adicionarFilmeNaTela(filme));
+        } else {
+            gridCatalogo.innerHTML = `
+                <div class="empty-state">
+                    <h2>Sua prateleira está vazia! 🍿</h2>
+                    <p>Busque um filme na barra acima ou explore nossas categorias.</p>
+                </div>
+            `;
+        }
+    } catch (erro) {
+        console.error('Erro ao conectar com o servidor:', erro);
+        gridCatalogo.innerHTML = `
+            <div class="empty-state">
+                <h2 style="color: #ef4444;">❌ Erro de Conexão</h2>
+                <p>Não foi possível acessar o banco de dados. Tente atualizar a página.</p>
+            </div>
+        `;
+    }
 }
 
 // --- 10. BOTÕES DE CATEGORIA --- //
@@ -258,7 +322,7 @@ function aplicarEfeitoTrailer(cartao, tmdbId) {
                 if (trailer) {
                     iframe = document.createElement('iframe');
                     iframe.src = `https://www.youtube.com/embed/${trailer.key}?autoplay=1&mute=1&controls=0&loop=1&playlist=${trailer.key}`;
-                    iframe.style.pointerEvents = 'none'; // Impede o iframe de bloquear o clique do usuário!
+                    iframe.style.pointerEvents = 'none'; 
                     container.appendChild(iframe);
                 }
             }
@@ -295,7 +359,6 @@ function fecharModal() {
     }
 }
 
-// Abre e constrói o modal do zero buscando na API
 async function abrirModalDetalhes(tmdbId, tituloPesquisa) {
     if (!modalOverlay || !modalCorpo) {
         console.error("Elementos do modal não foram encontrados no HTML.");
@@ -304,7 +367,7 @@ async function abrirModalDetalhes(tmdbId, tituloPesquisa) {
 
     modalOverlay.style.display = 'flex';
     setTimeout(() => modalOverlay.classList.add('ativo'), 10);
-    modalCorpo.innerHTML = '<p style="text-align: center; padding: 50px; color: #f5c518; font-weight: bold;">Montando informações...</p>';
+    modalCorpo.innerHTML = '<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px;"><div class="spinner"></div><p style="color: #f5c518; font-weight: bold; margin-top: 15px;">Carregando detalhes...</p></div>';
 
     try {
         let id = tmdbId;
