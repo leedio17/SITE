@@ -121,6 +121,10 @@ async function adicionarFilmeSelecionado(dadosFilme) {
         }
         
         adicionarFilmeNaTela(filmeSalvoNoBanco);
+        
+        // Dispara o Toast de Sucesso!
+        mostrarToast(`${dadosFilme.titulo} adicionado aos salvos!`, 'sucesso');
+        
     } catch (erro) { console.error("Erro ao salvar:", erro); }
     inputFilme.value = '';
 }
@@ -160,6 +164,9 @@ function adicionarFilmeNaTela(dadosFilme) {
         e.stopPropagation();
         await fetch(`https://api-meu-catalogo.onrender.com/filmes/${dadosFilme._id}`, { method: 'DELETE' });
         novoCartao.remove();
+        
+        // Dispara o Toast de Remoção
+        mostrarToast('Filme removido da prateleira.', 'info');
         
         // Verifica se ficou vazio após remover
         if (gridCatalogo.querySelectorAll('.cartao-filme').length === 0) {
@@ -234,7 +241,7 @@ async function carregarRecomendacoes() {
     const misturados = dados.results.sort(() => 0.5 - Math.random());
     gridCatalogo.innerHTML = ''; 
     
-    // 🔥 AGORA EXIBINDO 10 RECOMENDAÇÕES 🔥
+    // Exibindo 10 recomendações
     misturados.slice(0, 10).forEach(filme => processarExibicaoExterna(filme));
 }
 
@@ -262,6 +269,7 @@ btnAdicionar.addEventListener('click', async function() {
     if (inputFilme.value.trim() !== '') {
         const resposta = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&language=pt-BR&query=${encodeURIComponent(inputFilme.value)}`);
         const dados = await resposta.json();
+        
         if (dados.results && dados.results.length > 0) {
             const f = dados.results[0];
             await adicionarFilmeSelecionado({ 
@@ -271,6 +279,9 @@ btnAdicionar.addEventListener('click', async function() {
                 poster: f.poster_path ? `https://image.tmdb.org/t/p/w500${f.poster_path}` : null, 
                 tmdbId: f.id 
             });
+        } else {
+            // Toast Substituindo o antigo Alert
+            mostrarToast('Filme não encontrado!', 'erro');
         }
     }
 });
