@@ -347,3 +347,41 @@ header p {
 .link-social:hover svg {
     fill: #121212;
 }
+/* --- SISTEMA DE NOTIFICAÇÕES (TOAST) --- */
+.toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999; /* Fica acima de tudo no site */
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.toast {
+    min-width: 250px;
+    padding: 16px 20px;
+    border-radius: 8px;
+    color: #ffffff;
+    font-size: 0.95rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    /* Prepara a animação (começa fora da tela) */
+    transform: translateX(120%);
+    opacity: 0;
+    transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55), opacity 0.4s ease;
+}
+
+/* Quando o JS adicionar esta classe, o toast desliza para dentro */
+.toast.mostrar {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+/* Cores por tipo de aviso */
+.toast-sucesso { background-color: #10b981; border-left: 6px solid #047857; } /* Verde */
+.toast-erro { background-color: #ef4444; border-left: 6px solid #b91c1c; } /* Vermelho */
+.toast-info { background-color: #3b82f6; border-left: 6px solid #1d4ed8; } /* Azul */
