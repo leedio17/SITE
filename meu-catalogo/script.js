@@ -592,16 +592,19 @@ async function carregarCarrossel() {
     if (!track) return;
     
     try {
-        // Busca os filmes que estão nos cinemas hoje
         const url = `https://api.themoviedb.org/3/movie/now_playing?api_key=${API_KEY}&language=pt-BR&page=1`;
         const resposta = await fetch(url);
         const dados = await resposta.json();
         
-        // Pega os 10 primeiros
-        const filmes = dados.results.slice(0, 10);
+        // 1ª MUDANÇA: Aumentamos para 20 filmes
+        const filmes = dados.results.slice(0, 20);
+        
+        // 2ª MUDANÇA: O truque do Loop (Duplicamos a lista na tela)
+        const filmesDuplicados = [...filmes, ...filmes];
+        
         track.innerHTML = '';
 
-        filmes.forEach(filme => {
+        filmesDuplicados.forEach(filme => {
             const poster = filme.poster_path ? `https://image.tmdb.org/t/p/w300${filme.poster_path}` : null;
             if (!poster) return;
 
@@ -609,7 +612,6 @@ async function carregarCarrossel() {
             item.className = 'carrossel-item';
             item.innerHTML = `<img src="${poster}" alt="${filme.title}">`;
             
-            // Reutiliza a função incrível que você já tem: clicar abre o Modal Expandido!
             item.addEventListener('click', () => abrirModalDetalhes(filme.id, filme.title));
             
             track.appendChild(item);
@@ -624,25 +626,36 @@ async function carregarCarrossel() {
 
 function iniciarAutoScroll() {
     if (intervaloCarrossel) clearInterval(intervaloCarrossel);
-    // Move o carrossel a cada 3 segundos
     intervaloCarrossel = setInterval(() => moverCarrossel(1), 3000);
 }
 
+// 3ª MUDANÇA: A lógica que remove a "rebobinada" e cria a ilusão do infinito
 function moverCarrossel(direcao) {
     if (!track) return;
     const item = track.querySelector('.carrossel-item');
     if (!item) return;
 
-    const tamanhoItem = item.offsetWidth + 15; // Largura + Gap (espaço entre eles)
+    const tamanhoItem = item.offsetWidth + 15; // Largura do poster + Gap
+    const metadeDoCarrossel = track.scrollWidth / 2; // Ponto exato onde começa a lista duplicada
     
     if (direcao === 1) { 
-        // Se chegou no final, pula de volta suavemente pro começo
-        if (track.scrollLeft + track.offsetWidth >= track.scrollWidth - 10) {
-            track.scrollTo({ left: 0, behavior: 'smooth' });
-        } else {
-            track.scrollBy({ left: tamanhoItem * 2, behavior: 'smooth' });
+        // Se estiver indo para a direita e passar da metade
+        if (track.scrollLeft >= metadeDoCarrossel) {
+            track.style.scrollBehavior = 'auto'; // Desliga a suavidade
+            track.scrollLeft -= metadeDoCarrossel; // Teleporta pro começo invisivelmente
+            track.offsetHeight; // Força o navegador a registrar a mudança
+            track.style.scrollBehavior = 'smooth'; // Liga a suavidade de novo
         }
+        // Continua rolando
+        track.scrollBy({ left: tamanhoItem * 2, behavior: 'smooth' });
     } else { 
+        // Se estiver voltando para a esquerda e bater no limite zero
+        if (track.scrollLeft <= 0) {
+            track.style.scrollBehavior = 'auto';
+            track.scrollLeft += metadeDoCarrossel; // Teleporta pra metade invisivelmente
+            track.offsetHeight;
+            track.style.scrollBehavior = 'smooth';
+        }
         track.scrollBy({ left: -tamanhoItem * 2, behavior: 'smooth' });
     }
 }
@@ -651,7 +664,7 @@ function moverCarrossel(direcao) {
 if (btnNext) {
     btnNext.addEventListener('click', () => {
         moverCarrossel(1);
-        iniciarAutoScroll(); // Reseta o tempo para não pular 2x rápido demais
+        iniciarAutoScroll(); // Reseta o cronômetro
     });
 }
 
@@ -662,11 +675,11 @@ if (btnPrev) {
     });
 }
 
-// Pausa automática ao colocar o mouse em cima (UX Premium)
+// Pausa o carrossel ao colocar o mouse em cima (UX Premium)
 if (track) {
     track.addEventListener('mouseenter', () => clearInterval(intervaloCarrossel));
     track.addEventListener('mouseleave', iniciarAutoScroll);
 }
 
-// Inicializa a função
+// Inicia a função
 carregarCarrossel();
