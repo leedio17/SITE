@@ -1,18 +1,30 @@
 /* ========================================================================== */
-/* 1. CONFIGURAÇÕES GERAIS E TEMA (ESTILO IMDB)                               */
-/* Define o fundo escuro, fonte padrão e cor do texto                         */
+/* 1. CONFIGURAÇÕES GERAIS E TEMA ATMOSFÉRICO DE CINEMA                     */
+/* Define o fundo imersivo (luz do projetor) e fonte profissional             */
 /* ========================================================================== */
 body {
     font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    background-color: #121212; /* Fundo preto elegante */
-    color: #f3f4f6; /* Texto claro */
+    color: #f3f4f6; /* Texto claro principal */
     margin: 0;
     padding: 30px 20px;
+    
+    /* 🔥 FUNDO PROFISSIONAL: Sala de cinema escura com luz difusa 🔥 */
+    /* Base: Azul-petróleo quase preto (#08090a) */
+    background-color: #08090a;
+    
+    /* Adiciona dois focos de luz extremamente sutis do projetor */
+    background-image: 
+        /* Foco 1 (Top Direito): Brilho sutil azulado da lente */
+        radial-gradient(at 80% 20%, rgba(59, 130, 246, 0.08) 0px, transparent 50%),
+        /* Foco 2 (Atrás do Título): Brilho sutil amarelado da tela */
+        radial-gradient(at 20% 50%, rgba(245, 197, 24, 0.05) 0px, transparent 50%);
+    
+    background-attachment: fixed; /* O fundo fica parado enquanto o site rola */
 }
 
 /* ========================================================================== */
-/* 2. CABEÇALHO (HEADER)                                                      */
-/* Título principal do site e subtítulo                                       */
+/* 2. CABEÇALHO (HEADER) E TÍTULO COM EFEITO DE LUZ                          */
+/* Título principal do site com sombra que simula projeção                    */
 /* ========================================================================== */
 header {
     text-align: center;
@@ -21,21 +33,24 @@ header {
 
 header h1 {
     color: #f5c518; /* Amarelo clássico do IMDb */
-    font-size: 2.5rem;
+    font-size: 2.7rem;
     font-weight: 800;
     letter-spacing: 1px;
     margin-bottom: 8px;
     text-transform: uppercase;
+    /* Efeito de brilho suave no texto */
+    text-shadow: 0 0 15px rgba(245, 197, 24, 0.4);
 }
 
 header p {
-    color: #9ca3af;
-    font-size: 1rem;
+    color: #9ca3af; /* Cinza claro para o subtítulo */
+    font-size: 1.1rem;
+    font-weight: 500;
 }
 
 /* ========================================================================== */
 /* 3. PAINEL DE CONTROLE (BUSCA E ADICIONAR)                                  */
-/* Campo de texto, formulário e botão amarelo de busca                        */
+/* Campo de texto imersivo e botão amarelo refinado                         */
 /* ========================================================================== */
 .painel-controle {
     display: flex;
@@ -47,60 +62,126 @@ header p {
 #novo-filme {
     padding: 14px 18px;
     width: 340px;
-    background-color: #1f1f1f;
+    background-color: rgba(31, 31, 31, 0.8); /* Leve transparência para integrar ao fundo */
     border: 1px solid #374151;
-    border-radius: 6px;
+    border-radius: 8px;
     color: #ffffff;
     font-size: 1rem;
     outline: none;
-    transition: border-color 0.2s, box-shadow 0.2s;
+    transition: all 0.2s ease;
 }
 
 #novo-filme:focus {
     border-color: #f5c518;
     box-shadow: 0 0 0 2px rgba(245, 197, 24, 0.2);
+    background-color: rgba(31, 31, 31, 1);
 }
 
 #btn-adicionar {
-    padding: 14px 24px;
-    background-color: #f5c518; /* Botão principal em amarelo IMDb */
-    color: #121212;
+    padding: 14px 28px;
+    background-color: #f5c518; /* Amarelo IMDb */
+    color: #08090a; /* Texto escuro no botão amarelo */
     border: none;
-    border-radius: 6px;
+    border-radius: 8px;
     font-size: 1rem;
-    font-weight: bold;
+    font-weight: 700;
     cursor: pointer;
-    transition: background-color 0.2s, transform 0.1s;
+    transition: all 0.2s ease;
 }
 
 #btn-adicionar:hover {
     background-color: #e2b610;
+    transform: translateY(-1px);
 }
 
 #btn-adicionar:active {
-    transform: scale(0.98);
+    transform: translateY(1px) scale(0.98);
 }
 
 /* ========================================================================== */
-/* 4. GRADE DE CATÁLOGO                                                       */
+/* 4. MENUS DE CATEGORIA (NAVEGAÇÃO REFINADA)                                 */
+/* Pílulas flutuantes que mudam de cor suavemente no hover                    */
+/* ========================================================================== */
+.painel-categorias {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 35px;
+    flex-wrap: wrap;
+    max-width: 1100px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* 🔥 NOVO ESTILO PROFISSIONAL PARA OS MENUS (CATEGORIAS) 🔥 */
+.btn-categoria {
+    padding: 9px 18px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 20px; /* Estilo Pílula */
+    transition: all 0.3s ease;
+    
+    /* Estado Padrão: Imersivo no fundo escuro */
+    background: transparent;
+    color: #d1d5db; /* Cinza claro suave */
+    border: 1px solid #374151; /* Borda cinza sutil */
+}
+
+/* Hover: A pílula "acende" com a cor do tema */
+.btn-categoria:hover {
+    border-color: #f5c518;
+    color: #f5c518;
+    background-color: rgba(245, 197, 24, 0.05); /* Brilho amarelado sutil no fundo */
+    transform: translateY(-2px);
+}
+
+/* Ativo (Categoria Selecionada): Solidifica o brilho */
+.btn-categoria.active {
+    background: #f5c518;
+    color: #08090a;
+    border: 1px solid #f5c518;
+    font-weight: 700;
+    box-shadow: 0 0 15px rgba(245, 197, 24, 0.3); /* Glow suave */
+}
+
+/* Botão "Voltar" sutil na navegação */
+#btn-voltar {
+    padding: 10px 20px;
+    background: #1f1f1f;
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s;
+    margin-bottom: 20px;
+}
+
+#btn-voltar:hover {
+    background: #374151;
+}
+
+/* ========================================================================== */
+/* 5. GRADE DE CATÁLOGO                                                       */
 /* Container que organiza os filmes (cabe até 5 por fileira)                  */
 /* ========================================================================== */
 .grid-catalogo {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); 
-    gap: 25px; 
+    gap: 30px; /* Gap levemente maior para respirar mais */
     max-width: 1350px; 
     margin: 0 auto;
 }
 
 /* ========================================================================== */
-/* 5. CARTÕES DE FILMES (DESIGN PREMIUM)                                      */
+/* 6. CARTÕES DE FILMES (DESIGN PREMIUM)                                      */
 /* Visual individual de cada filme, hover de levitação e contêiner do trailer */
 /* ========================================================================== */
 .cartao-filme {
-    background: #1a1a1a;
-    border: 1px solid #2d2d2d;
-    border-radius: 8px;
+    background: rgba(26, 26, 26, 0.8); /* Fundo sutilmente transparente para o clima de cinema */
+    border: 1px solid rgba(45, 45, 45, 0.7);
+    border-radius: 12px; /* Cantos mais arredondados e modernos */
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -108,13 +189,14 @@ header p {
     padding: 12px;
     position: relative; 
     transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease, border-color 0.4s ease;
+    backdrop-filter: blur(5px); /* Efeito sutil de desfoque no fundo do cartão */
 }
 
-/* Efeito Glow Premium */
+/* Efeito Glow Premium Golden */
 .cartao-filme:hover {
-    transform: translateY(-10px) scale(1.02);
+    transform: translateY(-12px) scale(1.03); /* Levitação ligeiramente maior */
     border-color: #f5c518;
-    box-shadow: 0 15px 30px rgba(245, 197, 24, 0.2), 0 5px 15px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 15px 35px rgba(184, 134, 11, 0.25), 0 5px 15px rgba(0, 0, 0, 0.5); /* Glow dourado mais quente */
     z-index: 10; 
 }
 
@@ -123,7 +205,7 @@ header p {
     width: 100%;
     height: 300px;
     position: relative;
-    border-radius: 4px;
+    border-radius: 8px; /* Cantos arredondados dentro do cartão */
     overflow: hidden;
     margin-bottom: 12px;
     background: #000;
@@ -156,10 +238,12 @@ header p {
     margin: 0 0 6px 0;
     color: #ffffff;
     font-weight: 600;
+    line-height: 1.3;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
+    height: 2.7rem; /* Garante alinhamento simétrico */
 }
 
 .cartao-filme .ano {
@@ -174,7 +258,7 @@ header p {
 .cartao-filme p {
     font-size: 0.8rem;
     color: #9ca3af; 
-    line-height: 1.4;
+    line-height: 1.5;
     margin-bottom: 15px;
     text-align: left;
     flex-grow: 1;
@@ -186,13 +270,13 @@ header p {
 
 /* Botão de Remover da lixeira */
 .btn-remover {
-    background-color: #374151;
-    color: #ffffff;
+    background-color: #2d2d2d;
+    color: #d1d5db;
     border: none;
-    border-radius: 4px;
+    border-radius: 6px;
     padding: 8px;
-    font-size: 0.85rem;
-    font-weight: bold;
+    font-size: 0.8rem;
+    font-weight: 600;
     cursor: pointer;
     transition: background-color 0.2s;
     width: 100%;
@@ -201,15 +285,16 @@ header p {
 
 .btn-remover:hover {
     background-color: #ef4444; 
+    color: #ffffff;
 }
 
 /* ========================================================================== */
-/* 6. MODAL DE DETALHES EXPANDIDOS                                            */
-/* Fundo escurecido, imagem de topo e grade de atores                         */
+/* 7. MODAL DE DETALHES EXPANDIDOS E COMENTÁRIOS                              */
+/* Fundo escurecido, layout duplo e mural de opiniões                        */
 /* ========================================================================== */
 .modal-overlay {
     position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-    background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(5px);
+    background: rgba(0, 0, 0, 0.9); backdrop-filter: blur(8px); /* Desfoque maior no modal */
     display: flex; align-items: center; justify-content: center;
     z-index: 2000; opacity: 0; transition: opacity 0.3s ease;
 }
@@ -219,12 +304,12 @@ header p {
 }
 
 .modal-conteudo {
-    background: #121212;
-    width: 90%; max-width: 700px; max-height: 90vh;
-    border-radius: 12px; border: 1px solid #374151;
+    background: #08090a; /* Fundo mais escuro do tema imersivo */
+    width: 90%; max-width: 800px; max-height: 92vh; /* Ligeiramente maior */
+    border-radius: 12px; border: 1px solid #2d2d2d;
     position: relative; overflow-y: auto;
     transform: scale(0.95); transition: transform 0.3s ease;
-    box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+    box-shadow: 0 30px 60px rgba(0,0,0,0.7);
 }
 
 .modal-overlay.ativo .modal-conteudo {
@@ -240,57 +325,15 @@ header p {
 }
 
 .btn-fechar:hover { 
-    background: #f5c518; color: #121212; 
+    background: #f5c518; color: #08090a; 
 }
 
 .modal-header-img {
-    width: 100%; height: 250px; object-fit: cover;
-    mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
-    -webkit-mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
+    width: 100%; height: 280px; object-fit: cover;
+    mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
 }
 
-.modal-info { 
-    padding: 0 30px 30px 30px; 
-    margin-top: -50px; 
-    position: relative; 
-    z-index: 2; 
-}
-
-.modal-info h2 { 
-    font-size: 2rem; margin-bottom: 10px; color: #ffffff; 
-}
-
-.modal-tags { 
-    display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; 
-}
-
-.modal-tags span { 
-    background: #1f1f1f; border: 1px solid #374151; padding: 5px 12px; 
-    border-radius: 16px; font-size: 0.8rem; color: #f5c518; font-weight: bold; 
-}
-
-.modal-sinopse { 
-    color: #d1d5db; line-height: 1.6; font-size: 0.95rem; margin-bottom: 25px; 
-}
-
-.elenco-grid { 
-    display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 15px; 
-}
-
-.ator-card { text-align: center; }
-
-.ator-card img { 
-    width: 100%; height: 110px; object-fit: cover; border-radius: 8px; 
-    margin-bottom: 5px; border: 1px solid #2d2d2d; 
-}
-
-.ator-nome { color: #fff; font-size: 0.75rem; font-weight: bold; display: block; }
-.ator-papel { color: #9ca3af; font-size: 0.7rem; }
-
-/* ========================================================================== */
-/* 7. CHAT E FORMULÁRIO DE COMENTÁRIOS (MODAL DIREITO)                        */
-/* Layout duplo do modal e estilização do mural de opiniões                   */
-/* ========================================================================== */
 .modal-layout-duplo {
     display: flex;
     flex-direction: column;
@@ -302,31 +345,70 @@ header p {
         flex-direction: row;
     }
     .modal-info {
-        flex: 6.5;
+        flex: 6.2;
         border-right: 1px solid #2d2d2d;
     }
     .sessao-comentarios {
-        flex: 3.5;
+        flex: 3.8;
         display: flex;
         flex-direction: column;
-        max-height: 500px;
+        max-height: 550px;
     }
 }
 
+.modal-info { 
+    padding: 0 30px 30px 30px; 
+    margin-top: -60px; 
+    position: relative; 
+    z-index: 2; 
+}
+
+.modal-info h2 { 
+    font-size: 2.2rem; margin-bottom: 10px; color: #ffffff; text-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+}
+
+.modal-tags { 
+    display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; 
+}
+
+.modal-tags span { 
+    background: #1f1f1f; border: 1px solid #374151; padding: 6px 14px; 
+    border-radius: 16px; font-size: 0.8rem; color: #f5c518; font-weight: bold; 
+}
+
+.modal-sinopse { 
+    color: #d1d5db; line-height: 1.6; font-size: 0.95rem; margin-bottom: 25px; text-align: justify;
+}
+
+.elenco-grid { 
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(95px, 1fr)); gap: 15px; 
+}
+
+.ator-card { text-align: center; }
+
+.ator-card img { 
+    width: 100%; height: 115px; object-fit: cover; border-radius: 8px; 
+    margin-bottom: 6px; border: 1px solid #2d2d2d; 
+}
+
+.ator-nome { color: #fff; font-size: 0.75rem; font-weight: bold; display: block; }
+.ator-papel { color: #9ca3af; font-size: 0.7rem; }
+
+/* Estilização do Mural de Opiniões */
 .sessao-comentarios {
     padding: 20px;
-    background: #1a1a1a;
+    background: #08090a;
     display: flex;
     flex-direction: column;
 }
 
 .comentarios-header {
-    font-size: 1.1rem;
+    font-size: 1.2rem;
     color: #f5c518;
     margin-bottom: 15px;
     font-weight: bold;
     border-bottom: 1px solid #2d2d2d;
-    padding-bottom: 10px;
+    padding-bottom: 12px;
 }
 
 .lista-comentarios {
@@ -335,16 +417,17 @@ header p {
     margin-bottom: 15px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 12px;
     padding-right: 5px;
 }
 
 .balao-comentario {
-    background: #2d2d2d;
-    padding: 10px 12px;
+    background: #1a1a1a;
+    padding: 12px;
     border-radius: 8px;
     font-size: 0.85rem;
     color: #d1d5db;
+    border: 1px solid rgba(55, 65, 81, 0.5);
 }
 
 .balao-comentario strong {
@@ -357,24 +440,27 @@ header p {
 .form-comentario {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 10px;
+    border-top: 1px solid #2d2d2d;
+    padding-top: 15px;
 }
 
 .form-comentario input, .form-comentario textarea {
     width: 100%;
-    background: #121212;
+    background: #1a1a1a;
     border: 1px solid #374151;
     color: #fff;
-    padding: 8px;
-    border-radius: 4px;
+    padding: 10px;
+    border-radius: 6px;
     font-size: 0.85rem;
     outline: none;
     font-family: inherit;
+    box-sizing: border-box; /* Garante padding correto */
 }
 
 .form-comentario textarea {
     resize: none;
-    height: 60px;
+    height: 65px;
 }
 
 .form-comentario input:focus, .form-comentario textarea:focus {
@@ -383,11 +469,11 @@ header p {
 
 .btn-enviar-comentario {
     background: #f5c518;
-    color: #121212;
+    color: #08090a;
     border: none;
-    padding: 8px;
-    border-radius: 4px;
-    font-weight: bold;
+    padding: 10px;
+    border-radius: 6px;
+    font-weight: 700;
     cursor: pointer;
     transition: background 0.2s;
 }
@@ -398,7 +484,7 @@ header p {
 
 /* ========================================================================== */
 /* 8. ESTADOS DE CARREGAMENTO E VAZIO (LOADING & EMPTY STATE)                 */
-/* Animação do círculo giratório e mensagens de quando o banco está vazio     */
+/* Animação do círculo giratório e mensagens imersivas                        */
 /* ========================================================================== */
 .loading-container {
     grid-column: 1 / -1; 
@@ -406,18 +492,18 @@ header p {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 80px 20px;
+    padding: 100px 20px;
     text-align: center;
 }
 
 .spinner {
-    width: 50px;
-    height: 50px;
-    border: 5px solid #2d2d2d;
+    width: 60px;
+    height: 60px;
+    border: 6px solid #1f1f1f;
     border-top-color: #f5c518; 
     border-radius: 50%;
-    animation: spinner-girar 1s linear infinite;
-    margin-bottom: 20px;
+    animation: spinner-girar 0.9s linear infinite;
+    margin-bottom: 25px;
 }
 
 @keyframes spinner-girar {
@@ -426,57 +512,61 @@ header p {
 
 .loading-texto {
     color: #f3f4f6;
-    font-size: 1.2rem;
+    font-size: 1.3rem;
     font-weight: 600;
-    margin: 0 0 8px 0;
+    margin: 0 0 10px 0;
 }
 
 .loading-subtexto {
     color: #9ca3af;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
 }
 
 .empty-state {
     grid-column: 1 / -1;
     text-align: center;
-    padding: 80px 20px;
+    padding: 100px 20px;
     color: #9ca3af;
+    background: rgba(26, 26, 26, 0.4);
+    border-radius: 12px;
+    border: 1px dashed #374151;
 }
 
 .empty-state h2 { 
     color: #f3f4f6; 
-    margin-bottom: 10px; 
-    font-size: 1.8rem; 
+    margin-bottom: 12px; 
+    font-size: 2rem; 
 }
 
 /* ========================================================================== */
 /* 9. SISTEMA DE NOTIFICAÇÕES (TOASTS)                                        */
-/* Caixas flutuantes que dão avisos coloridos (sucesso, erro, informação)     */
+/* Caixas flutuantes premium (com transparência e reflexo)                    */
 /* ========================================================================== */
 .toast-container {
     position: fixed;
-    top: 20px;
-    right: 20px;
+    top: 25px;
+    right: 25px;
     z-index: 9999; 
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 12px;
 }
 
 .toast {
-    min-width: 250px;
-    padding: 16px 20px;
-    border-radius: 8px;
+    min-width: 280px;
+    padding: 16px 22px;
+    border-radius: 10px;
     color: #ffffff;
     font-size: 0.95rem;
     font-weight: 600;
     display: flex;
     align-items: center;
-    gap: 12px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    gap: 14px;
+    box-shadow: 0 15px 30px rgba(0,0,0,0.6);
     transform: translateX(120%);
     opacity: 0;
     transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55), opacity 0.4s ease;
+    backdrop-filter: blur(10px); /* Efeito Frost Glass nas notificações */
 }
 
 .toast.mostrar {
@@ -484,61 +574,64 @@ header p {
     opacity: 1;
 }
 
-.toast-sucesso { background-color: #10b981; border-left: 6px solid #047857; } 
-.toast-erro { background-color: #ef4444; border-left: 6px solid #b91c1c; } 
-.toast-info { background-color: #3b82f6; border-left: 6px solid #1d4ed8; } 
+.toast-sucesso { background-color: rgba(16, 185, 129, 0.9); border-left: 6px solid #047857; } 
+.toast-erro { background-color: rgba(239, 68, 68, 0.9); border-left: 6px solid #b91c1c; } 
+.toast-info { background-color: rgba(59, 130, 246, 0.9); border-left: 6px solid #1d4ed8; } 
 
 /* ========================================================================== */
 /* 10. RODAPÉ (FOOTER DO PORTFÓLIO)                                           */
-/* Links sociais e assinatura do desenvolvedor                                */
+/* Links sociais integrados ao tema escuro e profissional                     */
 /* ========================================================================== */
 .rodape-portfolio {
-    margin-top: 60px;
-    padding: 40px 20px;
+    margin-top: 80px;
+    padding: 50px 20px;
     border-top: 1px solid #2d2d2d;
     text-align: center;
     color: #9ca3af;
-    background-color: #121212; 
+    background-color: #08090a; /* Fundo imersivo */
 }
 
 .rodape-portfolio p {
-    font-size: 1rem;
-    margin-bottom: 15px;
+    font-size: 1.05rem;
+    margin-bottom: 20px;
+    color: #d1d5db;
 }
 
 .rodape-portfolio strong {
     color: #f5c518; 
+    text-shadow: 0 0 10px rgba(245, 197, 24, 0.3);
 }
 
 .links-sociais {
     display: flex;
     justify-content: center;
-    gap: 20px;
+    gap: 25px;
     flex-wrap: wrap;
 }
 
 .link-social {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     color: #d1d5db;
     text-decoration: none;
     font-size: 0.95rem;
     font-weight: 600;
-    padding: 8px 16px;
-    border-radius: 20px;
-    background: #1f1f1f;
+    padding: 10px 20px;
+    border-radius: 25px; /* Mais arredondado */
+    background: #1a1a1a;
     border: 1px solid #374151;
     transition: all 0.3s ease;
 }
 
 .link-social:hover {
     background: #f5c518;
-    color: #121212;
+    color: #08090a;
     border-color: #f5c518;
-    transform: translateY(-2px);
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(245, 197, 24, 0.3);
 }
 
 .link-social:hover svg {
-    fill: #121212;
+    fill: #08090a;
 }
