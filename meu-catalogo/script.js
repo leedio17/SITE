@@ -577,3 +577,96 @@ async function abrirModalDetalhes(tmdbId, tituloPesquisa) {
 // ========================================================================== //
 
 carregarListaDoServidor();
+
+// ========================================================================== //
+// 11. CARROSSEL DE DESTAQUES (LANÇAMENTOS)
+// Busca filmes em cartaz e cria o slider automático estilo Netflix
+// ========================================================================== //
+
+const track = document.getElementById('carrossel-track');
+const btnPrev = document.getElementById('btn-prev');
+const btnNext = document.getElementById('btn-next');
+let intervaloCarrossel;
+
+async function carregarCarrossel() {
+    if (!track) return;
+    
+    try {
+        // Busca os filmes que estão nos cinemas hoje
+        const url = `https://api.themoviedb.org/3/movie/now_playing?api_key=${API_KEY}&language=pt-BR&page=1`;
+        const resposta = await fetch(url);
+        const dados = await resposta.json();
+        
+        // Pega os 10 primeiros
+        const filmes = dados.results.slice(0, 10);
+        track.innerHTML = '';
+
+        filmes.forEach(filme => {
+            const poster = filme.poster_path ? `https://image.tmdb.org/t/p/w300${filme.poster_path}` : null;
+            if (!poster) return;
+
+            const item = document.createElement('div');
+            item.className = 'carrossel-item';
+            item.innerHTML = `<img src="${poster}" alt="${filme.title}">`;
+            
+            // Reutiliza a função incrível que você já tem: clicar abre o Modal Expandido!
+            item.addEventListener('click', () => abrirModalDetalhes(filme.id, filme.title));
+            
+            track.appendChild(item);
+        });
+
+        iniciarAutoScroll();
+
+    } catch (erro) {
+        console.error("Erro ao carregar carrossel:", erro);
+    }
+}
+
+function iniciarAutoScroll() {
+    if (intervaloCarrossel) clearInterval(intervaloCarrossel);
+    // Move o carrossel a cada 3 segundos
+    intervaloCarrossel = setInterval(() => moverCarrossel(1), 3000);
+}
+
+function moverCarrossel(direcao) {
+    if (!track) return;
+    const item = track.querySelector('.carrossel-item');
+    if (!item) return;
+
+    const tamanhoItem = item.offsetWidth + 15; // Largura + Gap (espaço entre eles)
+    
+    if (direcao === 1) { 
+        // Se chegou no final, pula de volta suavemente pro começo
+        if (track.scrollLeft + track.offsetWidth >= track.scrollWidth - 10) {
+            track.scrollTo({ left: 0, behavior: 'smooth' });
+        } else {
+            track.scrollBy({ left: tamanhoItem * 2, behavior: 'smooth' });
+        }
+    } else { 
+        track.scrollBy({ left: -tamanhoItem * 2, behavior: 'smooth' });
+    }
+}
+
+// Interações Manuais (Botões)
+if (btnNext) {
+    btnNext.addEventListener('click', () => {
+        moverCarrossel(1);
+        iniciarAutoScroll(); // Reseta o tempo para não pular 2x rápido demais
+    });
+}
+
+if (btnPrev) {
+    btnPrev.addEventListener('click', () => {
+        moverCarrossel(-1);
+        iniciarAutoScroll(); 
+    });
+}
+
+// Pausa automática ao colocar o mouse em cima (UX Premium)
+if (track) {
+    track.addEventListener('mouseenter', () => clearInterval(intervaloCarrossel));
+    track.addEventListener('mouseleave', iniciarAutoScroll);
+}
+
+// Inicializa a função
+carregarCarrossel();
