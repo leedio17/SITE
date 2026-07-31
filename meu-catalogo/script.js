@@ -397,14 +397,11 @@ function fecharModal() {
 }
 
 async function abrirModalDetalhes(tmdbId, tituloPesquisa) {
-    if (!modalOverlay || !modalCorpo) {
-        console.error("Elementos do modal não foram encontrados no HTML.");
-        return;
-    }
+    if (!modalOverlay || !modalCorpo) return;
 
     modalOverlay.style.display = 'flex';
     setTimeout(() => modalOverlay.classList.add('ativo'), 10);
-    modalCorpo.innerHTML = '<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px;"><div class="spinner"></div><p style="color: #f5c518; font-weight: bold; margin-top: 15px;">Carregando detalhes...</p></div>';
+    modalCorpo.innerHTML = '<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px;"><div class="spinner"></div><p style="color: #f5c518; font-weight: bold; margin-top: 15px;">Carregando detalhes do universo...</p></div>';
 
     try {
         let id = tmdbId;
@@ -414,16 +411,19 @@ async function abrirModalDetalhes(tmdbId, tituloPesquisa) {
         }
         if (!id) throw new Error("ID não encontrado");
 
+        // Busca Detalhes do TMDB e Comentários do seu Banco de Dados simultaneamente
         const resDetalhes = await fetch(`https://api.themoviedb.org/3/movie/${id}?api_key=${API_KEY}&language=pt-BR`);
         const resCreditos = await fetch(`https://api.themoviedb.org/3/movie/${id}/credits?api_key=${API_KEY}&language=pt-BR`);
+        const resComentarios = await fetch(`https://api-meu-catalogo.onrender.com/comentarios/${id}`); // Sua API
+        
         const detalhes = await resDetalhes.json();
         const creditos = await resCreditos.json();
+        const comentariosSalvos = await resComentarios.json();
 
         const imgFundo = detalhes.backdrop_path ? `https://image.tmdb.org/t/p/w780${detalhes.backdrop_path}` : '';
-        const duracao = detalhes.runtime ? `${detalhes.runtime} min` : 'Duração indisponível';
-        const generos = detalhes.genres ? detalhes.genres.map(g => g.name).join('</span><span>') : 'Desconhecido';
+        const duracao = detalhes.runtime ? `${detalhes.runtime} min` : 'N/A';
+        const generos = detalhes.genres ? detalhes.genres.map(g => g.name).join('</span><span>') : '';
         const diretor = creditos.crew ? creditos.crew.find(c => c.job === 'Director') : null;
-        const nomeDiretor = diretor ? diretor.name : 'Desconhecido';
         const elenco = creditos.cast ? creditos.cast.slice(0, 6) : [];
 
         let htmlElenco = '';
@@ -432,21 +432,94 @@ async function abrirModalDetalhes(tmdbId, tituloPesquisa) {
             htmlElenco += `<div class="ator-card"><img src="${foto}"><span class="ator-nome">${ator.name}</span><span class="ator-papel">${ator.character}</span></div>`;
         });
 
+        // Monta os balões de comentários que vieram do banco
+        let htmlComentarios = '';
+        if (comentariosSalvos.length > 0) {
+            comentariosSalvos.forEach(c => {
+                htmlComentarios += `<div class="balao-comentario"><strong>👤 ${c.nome}</strong>${c.texto}</div>`;
+            });
+        } else {
+            htmlComentarios = `<p id="msg-sem-comentarios" style="color: #9ca3af; font-size: 0.85rem; text-align: center; margin-top: 20px;">Seja o primeiro a comentar!</p>`;
+        }
+
+        // Constrói o HTML Final do Modal com as duas colunas
         modalCorpo.innerHTML = `
             ${imgFundo ? `<img src="${imgFundo}" class="modal-header-img">` : ''}
-            <div class="modal-info">
-                <h2>${detalhes.title}</h2>
-                <div class="modal-tags">
-                    <span>⭐ ${detalhes.vote_average ? detalhes.vote_average.toFixed(1) : 'N/A'}</span>
-                    <span>⏱️ ${duracao}</span>
-                    <span>🎬 Dirigido por: ${nomeDiretor}</span>
-                    <span>${generos}</span>
+            <div class="modal-layout-duplo">
+                <div class="modal-info">
+                    <h2>${detalhes.title}</h2>
+                    <div class="modal-tags">
+                        <span>⭐ ${detalhes.vote_average ? detalhes.vote_average.toFixed(1) : 'N/A'}</span>
+                        <span>⏱️ ${duracao}</span>
+                        <span>🎬 Dirigido por: ${diretor ? diretor.name : 'Desconhecido'}</span>
+                        <span>${generos}</span>
+                    </div>
+                    <p class="modal-sinopse">${detalhes.overview || 'Sinopse não disponível.'}</p>
+                    <h3 style="color: #fff; margin-bottom: 15px; font-size: 1.1rem; border-bottom: 1px solid #374151; padding-bottom: 5px;">Elenco Principal</h3>
+                    <div class="elenco-grid">${htmlElenco}</div>
                 </div>
-                <p class="modal-sinopse">${detalhes.overview || 'Sinopse não disponível para este filme.'}</p>
-                <h3 style="color: #fff; margin-bottom: 15px; font-size: 1.1rem; border-bottom: 1px solid #374151; padding-bottom: 5px;">Elenco Principal</h3>
-                <div class="elenco-grid">${htmlElenco}</div>
+
+                <div class="sessao-comentarios">
+                    <div class="comentarios-header">💬 Mural de Opiniões</div>
+                    <div class="lista-comentarios" id="caixa-comentarios">${htmlComentarios}</div>
+                    
+                    <div class="form-comentario">
+                        <input type="text" id="input-nome-comentario" placeholder="Seu nome (ex: Lidio)" maxlength="30" required>
+                        <textarea id="input-texto-comentario" placeholder="O que você achou do filme?" maxlength="150" required></textarea>
+                        <button class="btn-enviar-comentario" id="btn-enviar-comentario">Publicar</button>
+                    </div>
+                </div>
             </div>
         `;
+
+        // Ativando a Lógica de Enviar o Comentário
+        const btnEnviarComentario = document.getElementById('btn-enviar-comentario');
+        btnEnviarComentario.addEventListener('click', async () => {
+            const inputNome = document.getElementById('input-nome-comentario');
+            const inputTexto = document.getElementById('input-texto-comentario');
+            const nome = inputNome.value.trim();
+            const texto = inputTexto.value.trim();
+
+            if (!nome || !texto) {
+                mostrarToast('Preencha seu nome e o comentário!', 'erro');
+                return;
+            }
+
+            btnEnviarComentario.innerText = 'Enviando...';
+            btnEnviarComentario.disabled = true;
+
+            const novoComentario = { tmdbId: id, nome, texto };
+
+            try {
+                // Dispara para o backend
+                const resposta = await fetch('https://api-meu-catalogo.onrender.com/comentarios', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(novoComentario)
+                });
+                
+                if (resposta.ok) {
+                    // Adiciona instantaneamente na tela sem precisar recarregar
+                    const caixaComentarios = document.getElementById('caixa-comentarios');
+                    const msgSemComentarios = document.getElementById('msg-sem-comentarios');
+                    if (msgSemComentarios) msgSemComentarios.remove();
+                    
+                    const htmlNovo = `<div class="balao-comentario" style="border-left: 3px solid #f5c518;"><strong>👤 ${nome}</strong>${texto}</div>`;
+                    // Insere no topo da lista
+                    caixaComentarios.insertAdjacentHTML('afterbegin', htmlNovo);
+                    
+                    inputNome.value = '';
+                    inputTexto.value = '';
+                    mostrarToast('Opinião publicada!', 'sucesso');
+                }
+            } catch (erro) {
+                mostrarToast('Erro ao enviar. Tente novamente.', 'erro');
+            } finally {
+                btnEnviarComentario.innerText = 'Publicar';
+                btnEnviarComentario.disabled = false;
+            }
+        });
+
     } catch (erro) {
         console.error("Erro no modal:", erro);
         modalCorpo.innerHTML = '<p style="text-align: center; padding: 50px; color: #ef4444;">Erro ao carregar as informações.</p>';
