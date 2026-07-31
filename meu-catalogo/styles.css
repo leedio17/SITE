@@ -385,3 +385,111 @@ header p {
 .toast-sucesso { background-color: #10b981; border-left: 6px solid #047857; } /* Verde */
 .toast-erro { background-color: #ef4444; border-left: 6px solid #b91c1c; } /* Vermelho */
 .toast-info { background-color: #3b82f6; border-left: 6px solid #1d4ed8; } /* Azul */
+
+/* --- LAYOUT DUPLO DO MODAL COM ÁREA DE COMENTÁRIOS --- */
+.modal-layout-duplo {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Em telas de computador, divide em duas colunas */
+@media (min-width: 800px) {
+    .modal-layout-duplo {
+        flex-direction: row;
+    }
+    .modal-info {
+        flex: 6.5;
+        border-right: 1px solid #2d2d2d;
+    }
+    .sessao-comentarios {
+        flex: 3.5;
+        display: flex;
+        flex-direction: column;
+        max-height: 500px;
+    }
+}
+
+/* --- ESTILIZAÇÃO DO CHAT DE COMENTÁRIOS --- */
+.sessao-comentarios {
+    padding: 20px;
+    background: #1a1a1a;
+    display: flex;
+    flex-direction: column;
+}
+
+.comentarios-header {
+    font-size: 1.1rem;
+    color: #f5c518;
+    margin-bottom: 15px;
+    font-weight: bold;
+    border-bottom: 1px solid #2d2d2d;
+    padding-bottom: 10px;
+}
+
+.lista-comentarios {
+    flex-grow: 1;
+    overflow-y: auto;
+    margin-bottom: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-right: 5px;
+}
+
+.balao-comentario {
+    background: #2d2d2d;
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    color: #d1d5db;
+}
+
+.balao-comentario strong {
+    color: #fff;
+    display: block;
+    margin-bottom: 4px;
+    font-size: 0.9rem;
+}
+
+/* --- FORMULÁRIO DE COMENTÁRIO --- */
+.form-comentario {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-comentario input, .form-comentario textarea {
+    width: 100%;
+    background: #121212;
+    border: 1px solid #374151;
+    color: #fff;
+    padding: 8px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    outline: none;
+    font-family: inherit;
+}
+
+.form-comentario textarea {
+    resize: none;
+    height: 60px;
+}
+
+.form-comentario input:focus, .form-comentario textarea:focus {
+    border-color: #f5c518;
+}
+
+.btn-enviar-comentario {
+    background: #f5c518;
+    color: #121212;
+    border: none;
+    padding: 8px;
+    border-radius: 4px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-enviar-comentario:hover {
+    background: #e2b610;
+}
